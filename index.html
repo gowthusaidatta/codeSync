@@ -1,218 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Coding Profile Stats - Input</title>
-    <!-- Tailwind CSS for utility classes -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter for a modern typeface -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Base body styling with a dark gradient background and Inter font */
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1a202c, #2d3748); /* Dark blue/gray gradient */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 1rem; /* Responsive padding */
-        }
-
-        /* Main container styling for a frosted glass effect */
-        .glass-container {
-            background: rgba(255, 255, 255, 0.08); /* Slightly transparent white */
-            backdrop-filter: blur(15px); /* Frosted glass effect */
-            border: 1px solid rgba(255, 255, 255, 0.18); /* Subtle border */
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Stronger shadow for depth */
-            border-radius: 20px; /* More rounded corners */
-            padding: 2.5rem; /* Increased padding for better spacing */
-        }
-
-        /* Input field styling for a sleek, dark theme look */
-        input[type="text"] {
-            background: rgba(255, 255, 255, 0.05); /* Very subtle background for inputs */
-            border: 1px solid rgba(255, 255, 255, 0.2); /* Lighter border */
-            color: #e2e8f0; /* Light text color for readability */
-            padding: 0.75rem 1rem; /* Adjusted padding */
-            border-radius: 10px; /* Rounded input corners */
-            transition: all 0.3s ease; /* Smooth transitions for hover/focus */
-        }
-        input[type="text"]::placeholder {
-            color: #a0aec0; /* Lighter placeholder text */
-        }
-        input[type="text"]:focus {
-            outline: none; /* Remove default outline */
-            border-color: #63b3ed; /* Blue focus border */
-            box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.5); /* Blue glow on focus */
-            background: rgba(255, 255, 255, 0.1); /* Slightly more opaque on focus */
-        }
-
-        /* Custom checkmark styling with animations */
-        .checkmark-container {
-            width: 28px; /* Larger checkmark */
-            height: 28px;
-            border: 2px solid #a0aec0; /* Light gray border */
-            border-radius: 8px; /* Rounded corners */
-            margin-right: 12px; /* More space from input */
-            vertical-align: middle;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease; /* Smooth transition for state changes */
-            flex-shrink: 0; /* Prevent shrinking on smaller screens */
-        }
-        .checkmark-container.checked {
-            background-color: #48bb78; /* Green background when checked */
-            border-color: #48bb78; /* Green border when checked */
-            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.5); /* Green glow */
-        }
-        .checkmark-container:after {
-            content: "";
-            position: absolute;
-            display: none; /* Hidden by default */
-            left: 8px; /* Adjusted position for larger size */
-            top: 5px; /* Adjusted position */
-            width: 6px; /* Larger checkmark line */
-            height: 12px; /* Larger checkmark line */
-            border: solid white;
-            border-width: 0 3px 3px 0; /* Thicker lines */
-            transform: rotate(45deg);
-            opacity: 0; /* Start hidden for animation */
-            transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth fade and scale */
-        }
-        .checkmark-container.checked:after {
-            display: block; /* Show when checked */
-            opacity: 1; /* Fade in */
-            transform: rotate(45deg) scale(1); /* Scale in */
-        }
-
-        /* Gradient button with hover and active effects */
-        .gradient-button {
-            background-image: linear-gradient(to right, #6366f1, #a855f7); /* Purple-blue gradient */
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px; /* More rounded */
-            font-weight: 600;
-            font-size: 1.125rem; /* Larger font size */
-            transition: all 0.3s ease; /* Smooth transitions for interactive states */
-            box-shadow: 0 5px 15px rgba(100, 100, 255, 0.4); /* Soft shadow */
-            position: relative;
-            overflow: hidden; /* For the shine effect */
-            z-index: 1;
-        }
-        .gradient-button:hover {
-            transform: translateY(-2px); /* Lift effect on hover */
-            box-shadow: 0 8px 20px rgba(100, 100, 255, 0.6); /* More pronounced shadow */
-        }
-        .gradient-button:active {
-            transform: translateY(0); /* Press effect on click */
-            box-shadow: 0 3px 10px rgba(100, 100, 255, 0.3);
-        }
-        /* Shine effect on button hover */
-        .gradient-button:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
-            z-index: -1;
-        }
-        .gradient-button:hover:before {
-            left: 100%;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSync – Coding Profile Stats</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .glass {
+      backdrop-filter: blur(15px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-glow {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .btn-glow::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, #00c6ff, #0072ff);
+      animation: shine 2s linear infinite;
+      z-index: 0;
+    }
+    .btn-glow span {
+      position: relative;
+      z-index: 1;
+    }
+    @keyframes shine {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .checkmark {
+      transition: opacity 0.2s;
+      opacity: 0;
+    }
+    .checked {
+      opacity: 1;
+    }
+  </style>
 </head>
-<body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md glass-container">
-        <!-- Title with gradient text -->
-        <h1 class="text-3xl font-extrabold mb-8 text-center text-white drop-shadow-lg">
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-                Coding Profile Stats
-            </span>
-        </h1>
+<body class="bg-gradient-to-r from-gray-900 via-indigo-900 to-gray-900 min-h-screen flex items-center justify-center text-white font-sans">
 
-        <!-- Input fields section -->
-        <div class="space-y-6 mb-8">
-            <!-- LeetCode Input Group -->
-            <div class="flex items-center group">
-                <div id="leetcodeCheck" class="checkmark-container"></div>
-                <input id="leetcode" type="text" placeholder="LeetCode Username"
-                       class="flex-1 p-3 border-b-2 focus:outline-none focus:border-blue-500 rounded-lg text-white placeholder-gray-400 bg-transparent"
-                       oninput="toggleCheckmark(this)">
-            </div>
+  <div class="glass rounded-2xl shadow-lg p-10 max-w-md w-full text-center">
+    <h1 class="text-3xl font-bold mb-6">CodeSync Login</h1>
 
-            <!-- CodeChef Input Group -->
-            <div class="flex items-center group">
-                <div id="codechefCheck" class="checkmark-container"></div>
-                <input id="codechef" type="text" placeholder="CodeChef Username"
-                       class="flex-1 p-3 border-b-2 focus:outline-none focus:border-blue-500 rounded-lg text-white placeholder-gray-400 bg-transparent"
-                       oninput="toggleCheckmark(this)">
-            </div>
-
-            <!-- HackerRank Input Group -->
-            <div class="flex items-center group">
-                <div id="hackerrankCheck" class="checkmark-container"></div>
-                <input id="hackerrank" type="text" placeholder="HackerRank Username"
-                       class="flex-1 p-3 border-b-2 focus:outline-none focus:border-blue-500 rounded-lg text-white placeholder-gray-400 bg-transparent"
-                       oninput="toggleCheckmark(this)">
-            </div>
-
-            <!-- GeeksforGeeks Input Group -->
-            <div class="flex items-center group">
-                <div id="gfgCheck" class="checkmark-container"></div>
-                <input id="gfg" type="text" placeholder="GeeksforGeeks Username"
-                       class="flex-1 p-3 border-b-2 focus:outline-none focus:border-blue-500 rounded-lg text-white placeholder-gray-400 bg-transparent"
-                       oninput="toggleCheckmark(this)">
-            </div>
-        </div>
-
-        <!-- Get Stats Button -->
-        <button onclick="navigateToResults()"
-                class="w-full gradient-button">
-            Get Stats
-        </button>
+    <div id="auth" class="mb-4">
+      <button onclick="login()" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-semibold">Sign in with AWS Cognito</button>
     </div>
 
-    <script>
-        // Function to toggle checkmark based on input value
-        function toggleCheckmark(inputElement) {
-            const checkId = inputElement.id + 'Check';
-            const check = document.getElementById(checkId);
-            if (inputElement.value.trim()) {
-                check.classList.add('checked');
-            } else {
-                check.classList.remove('checked');
-            }
-        }
+    <div id="app" class="hidden">
+      <div class="space-y-4">
+        <div>
+          <input id="leetcode" type="text" placeholder="LeetCode Username" class="input-field w-full p-2 rounded-lg bg-gray-800 border border-gray-700 placeholder-gray-400" oninput="toggleCheckmark(this)">
+          <div id="leetcodeCheck" class="checkmark text-green-400">✔</div>
+        </div>
+        <div>
+          <input id="codechef" type="text" placeholder="CodeChef Username" class="input-field w-full p-2 rounded-lg bg-gray-800 border border-gray-700 placeholder-gray-400" oninput="toggleCheckmark(this)">
+          <div id="codechefCheck" class="checkmark text-green-400">✔</div>
+        </div>
+        <div>
+          <input id="hackerrank" type="text" placeholder="HackerRank Username" class="input-field w-full p-2 rounded-lg bg-gray-800 border border-gray-700 placeholder-gray-400" oninput="toggleCheckmark(this)">
+          <div id="hackerrankCheck" class="checkmark text-green-400">✔</div>
+        </div>
+        <div>
+          <input id="gfg" type="text" placeholder="GeeksforGeeks Username" class="input-field w-full p-2 rounded-lg bg-gray-800 border border-gray-700 placeholder-gray-400" oninput="toggleCheckmark(this)">
+          <div id="gfgCheck" class="checkmark text-green-400">✔</div>
+        </div>
 
-        // Initialize checkmarks on page load for pre-filled inputs
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('input').forEach(input => {
-                toggleCheckmark(input);
-            });
-        });
+        <button onclick="redirectToStats()" class="btn-glow w-full py-2 rounded-lg mt-4 text-white font-semibold"><span>Get Stats →</span></button>
 
-        // Function to navigate to the results page with query parameters
-        function navigateToResults() {
-            const leetcode = document.getElementById("leetcode").value.trim();
-            const codechef = document.getElementById("codechef").value.trim();
-            const hackerrank = document.getElementById("hackerrank").value.trim();
-            const gfg = document.getElementById("gfg").value.trim();
+        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 w-full mt-2 py-2 rounded-lg font-semibold">Logout</button>
+      </div>
+    </div>
+  </div>
 
-            const params = new URLSearchParams();
-            if (leetcode) params.append('leetcode', leetcode);
-            if (codechef) params.append('codechef', codechef);
-            if (hackerrank) params.append('hackerrank', hackerrank);
-            if (gfg) params.append('gfg', gfg);
+  <script>
+    // AWS Cognito details
+    const domain = "https://us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com";
+    const clientId = "4g0bo9ac68vq4g817v1je4e5sf";
+    const redirectUri = "https://gowthusaidatta.github.io/codeSync/index.html";
 
-            window.location.href = `results.html?${params.toString()}`;
-        }
-    </script>
+    function login() {
+      const loginUrl = `${domain}/login?client_id=${clientId}&response_type=token&scope=email+openid+profile&redirect_uri=${redirectUri}`;
+      window.location.href = loginUrl;
+    }
+
+    function logout() {
+      const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${redirectUri}`;
+      localStorage.clear();
+      window.location.href = logoutUrl;
+    }
+
+    function getTokenFromUrl() {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get('access_token');
+      if (accessToken) {
+        localStorage.setItem('access_token', accessToken);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
+    function toggleCheckmark(inputElement) {
+      const checkId = inputElement.id + "Check";
+      const check = document.getElementById(checkId);
+      if (inputElement.value.trim() !== "") {
+        check.classList.add("checked");
+      } else {
+        check.classList.remove("checked");
+      }
+    }
+
+    function redirectToStats() {
+      const leetcode = document.getElementById("leetcode").value.trim();
+      const codechef = document.getElementById("codechef").value.trim();
+      const hackerrank = document.getElementById("hackerrank").value.trim();
+      const gfg = document.getElementById("gfg").value.trim();
+
+      const queryParams = new URLSearchParams();
+      if (leetcode) queryParams.append("leetcode", leetcode);
+      if (codechef) queryParams.append("codechef", codechef);
+      if (hackerrank) queryParams.append("hackerrank", hackerrank);
+      if (gfg) queryParams.append("gfg", gfg);
+
+      if ([leetcode, codechef, hackerrank, gfg].every(v => v === "")) {
+        alert("Please enter at least one username.");
+        return;
+      }
+
+      window.location.href = `results.html?${queryParams.toString()}`;
+    }
+
+    // Auth check
+    function checkAuth() {
+      getTokenFromUrl();
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        document.getElementById("auth").style.display = "none";
+        document.getElementById("app").classList.remove("hidden");
+      }
+    }
+
+    checkAuth();
+  </script>
 </body>
 </html>
