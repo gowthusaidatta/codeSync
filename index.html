@@ -3,87 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CodeSync - Dashboard</title>
+  <title>CodeSync Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white font-sans flex flex-col items-center justify-center min-h-screen p-6">
-  <div class="text-center">
-    <h1 class="text-4xl font-bold mb-4">🚀 Welcome to CodeSync</h1>
-    <p class="mb-6">Track your coding platform scores and progress.</p>
+<body class="bg-gray-900 text-white font-sans min-h-screen flex items-center justify-center p-4">
 
-    <div id="authButtons" class="space-x-4 mb-6">
-      <button id="loginBtn" class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">Login</button>
-      <button id="logoutBtn" class="px-4 py-2 bg-red-600 rounded hover:bg-red-700 hidden">Logout</button>
+  <div class="text-center max-w-xl">
+    <h1 class="text-4xl font-bold mb-6">Welcome to <span class="text-purple-400">CodeSync</span></h1>
+
+    <div id="userInfo" class="hidden bg-gray-800 rounded-xl p-6 mb-4 shadow-lg">
+      <p class="mb-2">✅ <strong>Email:</strong> <span id="email"></span></p>
+      <p class="mb-2">🔑 <strong>ID Token:</strong> <span id="idToken"></span></p>
+      <button onclick="signOut()" class="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+        Sign Out
+      </button>
     </div>
 
-    <div id="userInfo" class="bg-gray-800 p-4 rounded-lg shadow-lg hidden">
-      <p class="mb-2"><strong>User:</strong> <span id="username">loading...</span></p>
-      <a href="results.html" class="underline text-green-400">Go to Results Page ➡️</a>
+    <div id="authButtons">
+      <button onclick="signIn()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded text-xl">
+        Sign In with Cognito
+      </button>
     </div>
   </div>
 
   <script>
     const clientId = "4g0bo9ac68vq4g817v1je4e5sf";
-    const domain = "us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com";
+    const domain = "https://us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com";
     const redirectUri = "https://gowthusaidatta.github.io/codeSync/index.html";
+    const logoutUri = redirectUri;
+    const scope = "openid profile email";
+    const responseType = "token";
 
-    const loginUrl = `https://${domain}/login?client_id=${clientId}&response_type=token&scope=email+openid+profile&redirect_uri=${redirectUri}`;
-    const logoutUrl = `https://${domain}/logout?client_id=${clientId}&logout_uri=${redirectUri}`;
+    // Trigger sign-in redirect
+    function signIn() {
+      window.location.href = `${domain}/login?client_id=${clientId}&response_type=${responseType}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    }
 
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const userInfo = document.getElementById("userInfo");
-    const usernameSpan = document.getElementById("username");
+    // Trigger logout
+    function signOut() {
+      window.location.href = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+    }
 
-    // Parse URL hash token
-    function getTokenFromUrl() {
+    // Parse URL hash to extract tokens
+    function getHashParams() {
       const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      return {
-        access_token: params.get("access_token"),
-        id_token: params.get("id_token"),
-        expires_in: params.get("expires_in"),
-        token_type: params.get("token_type")
-      };
+      const result = {};
+      hash.split('&').forEach(part => {
+        const [key, value] = part.split('=');
+        result[key] = decodeURIComponent(value);
+      });
+      return result;
     }
 
-    function parseJwt(token) {
-      if (!token) return null;
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    }
+    // On page load
+    window.onload = () => {
+      const params = getHashParams();
 
-    function showUser(token) {
-      const decoded = parseJwt(token);
-      if (decoded) {
-        usernameSpan.textContent = decoded.email || decoded["cognito:username"];
-        userInfo.classList.remove("hidden");
-        logoutBtn.classList.remove("hidden");
-        loginBtn.classList.add("hidden");
+      if (params.id_token) {
+        // User is authenticated
+        document.getElementById("authButtons").style.display = "none";
+        document.getElementById("userInfo").style.display = "block";
+
+        document.getElementById("idToken").textContent = params.id_token;
+
+        // Decode token to get email
+        const payload = JSON.parse(atob(params.id_token.split('.')[1]));
+        document.getElementById("email").textContent = payload.email;
       }
-    }
-
-    // On load
-    const tokens = getTokenFromUrl();
-    if (tokens.id_token) {
-      sessionStorage.setItem("id_token", tokens.id_token);
-      window.location.hash = ""; // Clean up URL
-    }
-
-    const savedToken = sessionStorage.getItem("id_token");
-    if (savedToken) {
-      showUser(savedToken);
-    }
-
-    loginBtn.onclick = () => window.location.href = loginUrl;
-    logoutBtn.onclick = () => {
-      sessionStorage.clear();
-      window.location.href = logoutUrl;
     };
   </script>
+
 </body>
 </html>
