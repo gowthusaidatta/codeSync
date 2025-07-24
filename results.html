@@ -1,269 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>CodeSync – Your Coding Stats</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom styles for loading spinner */
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #fff;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto; /* Center the spinner */
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .message-box {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 1rem;
-            font-weight: bold;
-            text-align: center;
-        }
-        .message-box.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .message-box.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .message-box.info {
-            background-color: #e2e8f0;
-            color: #2d3748;
-            border: 1px solid #cbd5e0;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSync – Results</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .glass {
+      backdrop-filter: blur(15px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .platform-card {
+      @apply p-4 rounded-xl bg-gray-800 text-white shadow-lg flex items-center justify-between space-x-4;
+    }
+  </style>
 </head>
 <body class="bg-gradient-to-r from-gray-900 via-purple-900 to-gray-900 min-h-screen flex flex-col items-center justify-center text-white font-sans p-4">
 
-    <div class="bg-gray-800 p-8 rounded-lg shadow-xl max-w-2xl w-full flex flex-col items-center">
-        <h1 class="text-3xl font-bold mb-6 text-purple-400">CodeSync – Your Coding Stats</h1>
+  <h1 class="text-3xl font-bold mb-6">CodeSync – Your Coding Stats</h1>
 
-        <div id="loadingIndicator" class="hidden my-4">
-            <div class="spinner"></div>
-            <p class="mt-2 text-gray-400">Fetching your scores...</p>
-        </div>
+  <div id="stats" class="grid gap-4 w-full max-w-2xl"></div>
 
-        <div id="stats" class="grid gap-4 w-full">
-            <!-- Stat cards will be injected here -->
-        </div>
+  <button onclick="logout()" class="mt-6 bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg font-semibold">Logout</button>
 
-        <div id="messageBox" class="message-box hidden w-full mt-4"></div>
+  <script>
+    const apiUrl = "https://8teu07es5h.execute-api.us-east-1.amazonaws.com/prob/get-score";
+    const logos = {
+      leetcode: "https://upload.wikimedia.org/wikipedia/commons/1/19/LeetCode_logo_black.png",
+      codechef: "https://upload.wikimedia.org/wikipedia/commons/1/12/Codechef_logo.png",
+      hackerrank: "https://upload.wikimedia.org/wikipedia/commons/6/65/HackerRank_logo.png",
+      gfg: "https://upload.wikimedia.org/wikipedia/commons/4/43/GeeksforGeeks.svg"
+    };
 
-        <button onclick="logout()" class="mt-6 bg-red-500 hover:bg-red-600 px-6 py-3 rounded-lg font-semibold transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">
-            Logout
-        </button>
-    </div>
+    const domain = "https://us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com";
+    const clientId = "4g0bo9ac68vq4g817v1je4e5sf";
+    const redirectUri = "https://gowthusaidatta.github.io/codeSync/index.html";
 
-    <script>
-        // --- API and Cognito Configuration ---
-        const apiUrl = "https://8teu07es5h.execute-api.us-east-1.amazonaws.com/prob/get-score";
-        const logos = {
-            leetcode: "https://upload.wikimedia.org/wikipedia/commons/1/19/LeetCode_logo_black.png",
-            codechef: "https://upload.wikimedia.org/wikipedia/commons/1/12/Codechef_logo.png",
-            hackerrank: "https://upload.wikimedia.org/wikipedia/commons/6/65/HackerRank_logo.png",
-            gfg: "https://upload.wikimedia.org/wikipedia/commons/4/43/GeeksforGeeks.svg"
-        };
+    function logout() {
+      const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${redirectUri}`;
+      localStorage.clear();
+      window.location.href = logoutUrl;
+    }
 
-        const COGNITO_DOMAIN = "https://us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com";
-        const CLIENT_ID = "4g0bo9ac68vq4g817v1je4e5sf";
-        // This MUST match the 'Callback URL(s)' and 'Sign-out URL(s)' in your Cognito App Client
-        const REDIRECT_TO_LOGIN_PAGE_URI = "https://gowthusaidatta.github.io/codeSync/index.html";
-        const LOGOUT_URL = `${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}&logout_uri=${encodeURIComponent(REDIRECT_TO_LOGIN_PAGE_URI)}`;
+    function checkAuth() {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        window.location.href = "index.html";
+      }
+    }
 
-        // --- UI Elements ---
-        const statsDiv = document.getElementById("stats");
-        const loadingIndicator = document.getElementById("loadingIndicator");
-        const messageBox = document.getElementById("messageBox");
+    function getUsernames() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        leetcode: params.get("leetcode"),
+        codechef: params.get("codechef"),
+        hackerrank: params.get("hackerrank"),
+        gfg: params.get("gfg")
+      };
+    }
 
-        // --- Helper Functions ---
+    async function fetchScores(usernames) {
+      const response = await fetch(`${apiUrl}?leetcode=${usernames.leetcode || ""}&codechef=${usernames.codechef || ""}&hackerrank=${usernames.hackerrank || ""}&gfg=${usernames.gfg || ""}`);
+      return await response.json();
+    }
 
-        /**
-         * Displays a message in the message box.
-         * @param {string} message - The message to display.
-         * @param {'success'|'error'|'info'} type - The type of message (for styling).
-         */
-        function showMessage(message, type) {
-            messageBox.textContent = message;
-            messageBox.className = `message-box ${type}`;
-            messageBox.classList.remove("hidden");
+    function createStatCard(platform, score, username) {
+      const container = document.createElement("div");
+      container.className = "platform-card";
+
+      const left = document.createElement("div");
+      left.className = "flex items-center space-x-4";
+
+      const logo = document.createElement("img");
+      logo.src = logos[platform];
+      logo.alt = platform;
+      logo.className = "w-12 h-12 rounded-full";
+
+      const info = document.createElement("div");
+      info.innerHTML = `<div class="text-lg font-bold capitalize">${platform}</div>
+                        <div class="text-sm text-gray-400">${username}</div>`;
+
+      left.appendChild(logo);
+      left.appendChild(info);
+
+      const scoreEl = document.createElement("div");
+      scoreEl.className = "text-2xl font-bold text-green-400";
+      scoreEl.innerText = score ?? "N/A";
+
+      container.appendChild(left);
+      container.appendChild(scoreEl);
+      return container;
+    }
+
+    async function init() {
+      checkAuth();
+      const usernames = getUsernames();
+      const scores = await fetchScores(usernames);
+
+      const statsDiv = document.getElementById("stats");
+
+      Object.entries(usernames).forEach(([platform, username]) => {
+        if (username) {
+          const score = scores[platform];
+          const card = createStatCard(platform, score, username);
+          statsDiv.appendChild(card);
         }
+      });
+    }
 
-        /**
-         * Hides the message box.
-         */
-        function hideMessage() {
-            messageBox.classList.add("hidden");
-            messageBox.textContent = "";
-        }
-
-        /**
-         * Shows or hides the loading indicator.
-         * @param {boolean} show - True to show, false to hide.
-         */
-        function showLoading(show) {
-            if (show) {
-                loadingIndicator.classList.remove("hidden");
-            } else {
-                loadingIndicator.classList.add("hidden");
-            }
-        }
-
-        /**
-         * Checks if the user is authenticated by looking for the ID token in sessionStorage.
-         * If not authenticated, redirects to the login page.
-         */
-        function checkAuth() {
-            const idToken = sessionStorage.getItem("id_token");
-            if (!idToken) {
-                showMessage("You are not logged in. Redirecting to login page...", "error");
-                setTimeout(() => {
-                    window.location.href = REDIRECT_TO_LOGIN_PAGE_URI;
-                }, 2000); // Redirect after 2 seconds
-                return false;
-            }
-            return true;
-        }
-
-        /**
-         * Extracts usernames for coding platforms from the URL query parameters.
-         * @returns {object} An object containing usernames for each platform.
-         */
-        function getUsernames() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                leetcode: params.get("leetcode"),
-                codechef: params.get("codechef"),
-                hackerrank: params.get("hackerrank"),
-                gfg: params.get("gfg")
-            };
-        }
-
-        /**
-         * Fetches scores from the API for the given usernames.
-         * @param {object} usernames - Object containing platform usernames.
-         * @returns {Promise<object>} A promise that resolves to the scores data.
-         */
-        async function fetchScores(usernames) {
-            try {
-                const queryParams = new URLSearchParams();
-                for (const platform in usernames) {
-                    if (usernames[platform]) {
-                        queryParams.append(platform, usernames[platform]);
-                    }
-                }
-                if (queryParams.toString() === "") {
-                    showMessage("No coding platform usernames provided in the URL.", "info");
-                    return {}; // Return empty object if no usernames
-                }
-
-                showLoading(true);
-                hideMessage(); // Clear previous messages
-
-                const response = await fetch(`${apiUrl}?${queryParams.toString()}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return await response.json();
-            } catch (error) {
-                console.error("Error fetching scores:", error);
-                showMessage(`Failed to fetch scores: ${error.message}. Please try again later.`, "error");
-                return {}; // Return empty object on error
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        /**
-         * Creates an HTML card to display a platform's score.
-         * @param {string} platform - The name of the coding platform.
-         * @param {number|string|null} score - The score for the platform.
-         * @param {string} username - The username for the platform.
-         * @returns {HTMLElement} The created div element for the stat card.
-         */
-        function createStatCard(platform, score, username) {
-            const container = document.createElement("div");
-            // Applying Tailwind classes directly
-            container.className = "p-4 rounded-xl bg-gray-700 text-white shadow-lg flex items-center justify-between space-x-4 glass transform transition duration-300 hover:scale-105";
-
-            const left = document.createElement("div");
-            left.className = "flex items-center space-x-4";
-
-            const logo = document.createElement("img");
-            logo.src = logos[platform];
-            logo.alt = platform;
-            logo.className = "w-12 h-12 rounded-full object-contain bg-white p-1"; /* Added bg-white and p-1 for better logo visibility */
-
-            const info = document.createElement("div");
-            info.innerHTML = `<div class="text-lg font-bold capitalize">${platform}</div>
-                              <div class="text-sm text-gray-400">${username}</div>`;
-
-            left.appendChild(logo);
-            left.appendChild(info);
-
-            const scoreEl = document.createElement("div");
-            scoreEl.className = "text-2xl font-bold text-green-400";
-            scoreEl.innerText = (score !== null && score !== undefined) ? score : "N/A"; // Handle null/undefined scores
-
-            container.appendChild(left);
-            container.appendChild(scoreEl);
-            return container;
-        }
-
-        // --- Logout Function ---
-        function logout() {
-            sessionStorage.clear(); // Clear all tokens (ID, Access, Refresh, PKCE verifier)
-            // Redirect to Cognito logout endpoint to clear Cognito session
-            window.location.href = LOGOUT_URL;
-        }
-
-        // --- Initialization on Page Load ---
-        async function init() {
-            if (!checkAuth()) {
-                return; // Stop execution if not authenticated
-            }
-
-            const usernames = getUsernames();
-            const hasUsernames = Object.values(usernames).some(username => username !== null && username !== "");
-
-            if (!hasUsernames) {
-                showMessage("No coding platform usernames provided in the URL. Please ensure you navigate here with usernames (e.g., ?leetcode=your_username).", "info");
-                return;
-            }
-
-            const scores = await fetchScores(usernames);
-
-            // Clear previous cards before adding new ones
-            statsDiv.innerHTML = '';
-
-            let cardsAdded = 0;
-            Object.entries(usernames).forEach(([platform, username]) => {
-                if (username) {
-                    const score = scores[platform];
-                    const card = createStatCard(platform, score, username);
-                    statsDiv.appendChild(card);
-                    cardsAdded++;
-                }
-            });
-
-            if (cardsAdded === 0 && hasUsernames) {
-                showMessage("Could not retrieve scores for the provided usernames. Please check the usernames and try again.", "error");
-            } else if (cardsAdded > 0) {
-                hideMessage(); // Hide any previous info messages if cards are displayed
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+    init();
+  </script>
 </body>
 </html>
