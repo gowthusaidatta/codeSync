@@ -1,158 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>CodeSync - Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeSync - AWS Cognito Hosted UI Demo</title>
     <style>
-        /* Custom styles for loading spinner */
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #fff;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto; /* Center the spinner */
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        h1, h2 { color: #007bff; margin-bottom: 20px; }
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 10px;
         }
-        .message-box {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 1rem;
+        #loginButton {
+            background-color: #007bff;
+            color: white;
+        }
+        #loginButton:hover {
+            background-color: #0056b3;
+        }
+        #logoutButton {
+            background-color: #dc3545;
+            color: white;
+        }
+        #logoutButton:hover {
+            background-color: #c82333;
+        }
+        .section { margin-top: 25px; padding: 20px; border: 1px dashed #ccc; border-radius: 8px; background-color: #f9f9f9; text-align: left; }
+        .hidden { display: none; }
+        pre {
+            background-color: #eee;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 0.9em;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
             font-weight: bold;
+            display: inline-block;
+            text-align: left;
         }
-        .message-box.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .message-box.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
-<body class="bg-gray-900 text-white font-sans flex flex-col items-center justify-center min-h-screen p-6">
-    <div class="text-center bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full">
-        <h1 class="text-4xl font-bold mb-4 text-blue-400">🚀 Welcome to CodeSync</h1>
-        <p class="mb-6 text-gray-300">Track your coding platform scores and progress.</p>
+<body>
+    <div class="container">
+        <h1>CodeSync - AWS Cognito Hosted UI</h1>
 
-        <div id="authButtons" class="space-x-4 mb-6">
-            <button id="loginBtn" class="px-6 py-3 bg-blue-600 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">Login</button>
-            <button id="logoutBtn" class="px-6 py-3 bg-red-600 rounded-lg hover:bg-red-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-lg hidden">Logout</button>
+        <div id="authRequiredSection">
+            <p>Please log in to access your profile.</p>
+            <button id="loginButton" onclick="redirectToCognitoLogin()">Login with Cognito</button>
         </div>
 
-        <div id="loadingIndicator" class="hidden">
-            <div class="spinner"></div>
-            <p class="mt-2 text-gray-400">Processing login...</p>
+        <div id="authenticatedSection" class="hidden">
+            <h2>Welcome, <span id="displayUsername"></span>!</h2>
+            <p>You are logged in.</p>
+            <div class="section">
+                <h3>Your Profile Information (from ID Token)</h3>
+                <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+                <p><strong>Username:</strong> <span id="profilePreferredUsername"></span></p>
+                <p><strong>Cognito User ID:</strong> <span id="profileSub"></span></p>
+            </div>
+            <div class="section">
+                <h3>Your Tokens</h3>
+                <p><strong>ID Token:</strong></p>
+                <pre id="idTokenDisplay"></pre>
+                <p><strong>Access Token:</strong></p>
+                <pre id="accessTokenDisplay"></pre>
+                <p><strong>Refresh Token:</strong> (Stored securely, not displayed for security)</p>
+            </div>
+            <button id="logoutButton" onclick="redirectToCognitoLogout()">Logout</button>
         </div>
 
-        <div id="userInfo" class="bg-gray-700 p-6 rounded-lg shadow-lg hidden text-left">
-            <p class="mb-3 text-lg"><strong>User:</strong> <span id="username" class="text-blue-300"></span></p>
-            <p class="mb-3 text-lg"><strong>Email:</strong> <span id="userEmail" class="text-blue-300"></span></p>
-            <a href="results.html" class="inline-block px-4 py-2 mt-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md">Go to Results Page ➡️</a>
-        </div>
-
-        <div id="messageBox" class="message-box hidden"></div>
+        <div id="messageDisplay" class="message hidden"></div>
     </div>
 
     <script>
-        // --- Cognito Configuration ---
-        const CLIENT_ID = "4g0bo9ac68vq4g817v1je4e5sf";
-        const COGNITO_DOMAIN = "us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com";
-        // Ensure this redirect URI exactly matches what's configured in your Cognito App Client
-        const REDIRECT_URI = "https://gowthusaidatta.github.io/codeSync/index.html";
+        // --- YOUR COGNITO CONFIGURATION ---
+        const USER_POOL_ID = 'us-east-1_RMhlKuGHS';
+        const APP_CLIENT_ID = '4g0bo9ac68vq4g817v1je4e5sf';
+        const COGNITO_DOMAIN = 'https://us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com';
+        const REDIRECT_URI = 'https://gowthusaidatta.github.io/codeSync/'; // Must exactly match your Cognito App Client setting
 
         // --- Cognito Endpoints ---
-        const TOKEN_ENDPOINT = `https://${COGNITO_DOMAIN}/oauth2/token`;
-        const LOGOUT_URL = `https://${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}&logout_uri=${encodeURIComponent(REDIRECT_URI)}`;
+        const LOGIN_URL = `${COGNITO_DOMAIN}/login?client_id=${APP_CLIENT_ID}&response_type=code&scope=email+openid+profile&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+        const TOKEN_ENDPOINT = `${COGNITO_DOMAIN}/oauth2/token`;
+        const LOGOUT_URL = `${COGNITO_DOMAIN}/logout?client_id=${APP_CLIENT_ID}&logout_uri=${encodeURIComponent(REDIRECT_URI)}`;
 
         // --- UI Elements ---
-        const loginBtn = document.getElementById("loginBtn");
-        const logoutBtn = document.getElementById("logoutBtn");
-        const userInfo = document.getElementById("userInfo");
-        const usernameSpan = document.getElementById("username");
-        const userEmailSpan = document.getElementById("userEmail");
-        const loadingIndicator = document.getElementById("loadingIndicator");
-        const messageBox = document.getElementById("messageBox");
+        const authRequiredSection = document.getElementById('authRequiredSection');
+        const authenticatedSection = document.getElementById('authenticatedSection');
+        const displayUsername = document.getElementById('displayUsername');
+        const profileEmail = document.getElementById('profileEmail');
+        const profilePreferredUsername = document.getElementById('profilePreferredUsername');
+        const profileSub = document.getElementById('profileSub');
+        const idTokenDisplay = document.getElementById('idTokenDisplay');
+        const accessTokenDisplay = document.getElementById('accessTokenDisplay');
+        const messageDisplay = document.getElementById('messageDisplay');
 
         // --- Helper Functions ---
-
-        /**
-         * Displays a message in the message box.
-         * @param {string} message - The message to display.
-         * @param {'success'|'error'} type - The type of message (for styling).
-         */
         function showMessage(message, type) {
-            messageBox.textContent = message;
-            messageBox.className = `message-box ${type}`;
-            messageBox.classList.remove("hidden");
+            messageDisplay.textContent = message;
+            messageDisplay.className = `message ${type}`;
+            messageDisplay.classList.remove('hidden');
         }
 
-        /**
-         * Hides the message box.
-         */
         function hideMessage() {
-            messageBox.classList.add("hidden");
-            messageBox.textContent = "";
+            messageDisplay.classList.add('hidden');
+            messageDisplay.textContent = '';
         }
 
-        /**
-         * Shows or hides the loading indicator.
-         * @param {boolean} show - True to show, false to hide.
-         */
-        function showLoading(show) {
-            if (show) {
-                loadingIndicator.classList.remove("hidden");
-                loginBtn.disabled = true;
-                logoutBtn.disabled = true;
-            } else {
-                loadingIndicator.classList.add("hidden");
-                loginBtn.disabled = false;
-                logoutBtn.disabled = false;
+        // --- Base64 URL decode (for JWT) ---
+        function urlBase64Decode(str) {
+            let output = str.replace(/-/g, '+').replace(/_/g, '/');
+            switch (output.length % 4) {
+                case 0: break;
+                case 2: output += '=='; break;
+                case 3: output += '='; break;
+                default: throw 'Illegal base64url string!';
             }
+            return decodeURIComponent(atob(output).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
         }
 
-        /**
-         * Generates a cryptographically random string for PKCE code_verifier.
-         * @returns {string} The code verifier.
-         */
-        function generateCodeVerifier() {
-            const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let text = '';
-            for (let i = 0; i < 128; i++) { // PKCE recommends 43-128 characters
-                text += possible.charAt(Math.floor(Math.random() * possible.length));
-            }
-            return text;
-        }
-
-        /**
-         * Hashes the code_verifier using SHA256 and Base64Url encodes it for code_challenge.
-         * @param {string} verifier - The code verifier.
-         * @returns {Promise<string>} The Base64Url encoded SHA256 hash.
-         */
-        async function generateCodeChallenge(verifier) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(verifier);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const base64 = btoa(String.fromCharCode(...hashArray));
-            return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        }
-
-        /**
-         * Parses a JWT token to extract its payload.
-         * @param {string} token - The JWT string.
-         * @returns {object|null} The decoded JWT payload, or null if invalid.
-         */
         function parseJwt(token) {
-            if (!token) return null;
             try {
                 const base64Url = token.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -166,95 +157,61 @@
             }
         }
 
-        /**
-         * Stores tokens in sessionStorage.
-         * @param {string} idToken
-         * @param {string} accessToken
-         * @param {string} refreshToken
-         */
         function setSession(idToken, accessToken, refreshToken) {
             sessionStorage.setItem('id_token', idToken);
             sessionStorage.setItem('access_token', accessToken);
             sessionStorage.setItem('refresh_token', refreshToken);
         }
 
-        /**
-         * Clears all tokens from sessionStorage.
-         */
         function clearSession() {
             sessionStorage.removeItem('id_token');
             sessionStorage.removeItem('access_token');
             sessionStorage.removeItem('refresh_token');
-            sessionStorage.removeItem('code_verifier'); // Clear PKCE verifier too
         }
 
-        /**
-         * Updates the UI based on authentication status.
-         */
+        function getSession() {
+            return {
+                idToken: sessionStorage.getItem('id_token'),
+                accessToken: sessionStorage.getItem('access_token'),
+                refreshToken: sessionStorage.getItem('refresh_token')
+            };
+        }
+
         function updateUI() {
-            const idToken = sessionStorage.getItem("id_token");
-            if (idToken) {
-                const decoded = parseJwt(idToken);
-                if (decoded) {
-                    usernameSpan.textContent = decoded.preferred_username || decoded.email || decoded.sub || "N/A";
-                    userEmailSpan.textContent = decoded.email || "N/A";
-                    userInfo.classList.remove("hidden");
-                    logoutBtn.classList.remove("hidden");
-                    loginBtn.classList.add("hidden");
-                } else {
-                    // Token exists but is invalid, clear session
-                    clearSession();
-                    updateUI(); // Re-run to show login state
+            const session = getSession();
+            if (session.idToken) {
+                authRequiredSection.classList.add('hidden');
+                authenticatedSection.classList.remove('hidden');
+                hideMessage();
+
+                const idTokenParsed = parseJwt(session.idToken);
+                if (idTokenParsed) {
+                    displayUsername.textContent = idTokenParsed.preferred_username || idTokenParsed.email || idTokenParsed.sub;
+                    profileEmail.textContent = idTokenParsed.email || 'N/A';
+                    profilePreferredUsername.textContent = idTokenParsed.preferred_username || 'N/A';
+                    profileSub.textContent = idTokenParsed.sub || 'N/A';
+                    idTokenDisplay.textContent = JSON.stringify(idTokenParsed, null, 2);
                 }
+                accessTokenDisplay.textContent = session.accessToken;
             } else {
-                userInfo.classList.add("hidden");
-                logoutBtn.classList.add("hidden");
-                loginBtn.classList.remove("hidden");
+                authRequiredSection.classList.remove('hidden');
+                authenticatedSection.classList.add('hidden');
+                hideMessage();
             }
         }
 
-        // --- Cognito Authentication Flow ---
+        // --- Cognito Specific Functions ---
 
-        /**
-         * Redirects the user to the Cognito Hosted UI for login using Authorization Code Grant with PKCE.
-         */
-        async function redirectToCognitoLogin() {
-            showLoading(true);
-            hideMessage();
-
-            const codeVerifier = generateCodeVerifier();
-            sessionStorage.setItem('code_verifier', codeVerifier); // Store for later use
-
-            const codeChallenge = await generateCodeChallenge(codeVerifier);
-
-            const loginUrl = `https://${COGNITO_DOMAIN}/login?` +
-                             `client_id=${CLIENT_ID}&` +
-                             `response_type=code&` +
-                             `scope=email+openid+profile&` +
-                             `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
-                             `code_challenge=${codeChallenge}&` +
-                             `code_challenge_method=S256`;
-
-            window.location.href = loginUrl;
+        function redirectToCognitoLogin() {
+            window.location.href = LOGIN_URL;
         }
 
-        /**
-         * Exchanges the authorization code for ID, Access, and Refresh tokens.
-         * @param {string} code - The authorization code received from Cognito.
-         */
+        function redirectToCognitoLogout() {
+            clearSession();
+            window.location.href = LOGOUT_URL;
+        }
+
         async function exchangeCodeForTokens(code) {
-            showLoading(true);
-            hideMessage();
-
-            const codeVerifier = sessionStorage.getItem('code_verifier');
-            if (!codeVerifier) {
-                showMessage("PKCE code_verifier not found. Please try logging in again.", "error");
-                showLoading(false);
-                clearSession(); // Ensure a clean state
-                updateUI();
-                return;
-            }
-
             try {
                 const response = await fetch(TOKEN_ENDPOINT, {
                     method: 'POST',
@@ -263,10 +220,9 @@
                     },
                     body: new URLSearchParams({
                         grant_type: 'authorization_code',
-                        client_id: CLIENT_ID,
+                        client_id: APP_CLIENT_ID,
                         code: code,
-                        redirect_uri: REDIRECT_URI,
-                        code_verifier: codeVerifier // PKCE verifier
+                        redirect_uri: REDIRECT_URI
                     })
                 });
 
@@ -278,48 +234,34 @@
                 const data = await response.json();
                 setSession(data.id_token, data.access_token, data.refresh_token);
                 showMessage('Successfully logged in!', 'success');
-                // Clean up URL parameters after successful exchange
+                // Remove code from URL to clean it up
                 window.history.replaceState({}, document.title, window.location.pathname);
+                updateUI();
             } catch (error) {
                 console.error('Error exchanging code for tokens:', error);
                 showMessage(`Login error: ${error.message}`, 'error');
-                clearSession(); // Clear any partial session data on error
-            } finally {
-                showLoading(false);
-                updateUI(); // Always update UI after attempt
+                clearSession();
+                updateUI();
             }
         }
 
-        /**
-         * Handles user logout.
-         */
-        function handleLogout() {
-            clearSession();
-            // Redirect to Cognito logout endpoint to clear Cognito session
-            window.location.href = LOGOUT_URL;
-        }
-
-        // --- Event Listeners ---
-        loginBtn.onclick = redirectToCognitoLogin;
-        logoutBtn.onclick = handleLogout;
-
-        // --- Initial Page Load Logic ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const error = urlParams.get('error');
-            const errorDescription = urlParams.get('error_description');
+        // --- On Page Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            const error = params.get('error');
+            const error_description = params.get('error_description');
 
             if (code) {
-                // If a 'code' parameter is present, it means Cognito redirected back
-                await exchangeCodeForTokens(code);
+                // We have an authorization code, exchange it for tokens
+                exchangeCodeForTokens(code);
             } else if (error) {
-                // If an 'error' parameter is present, something went wrong with Cognito redirect
-                showMessage(`Authentication failed: ${errorDescription || error}`, 'error');
-                clearSession(); // Clear any lingering session data
+                // Cognito returned an error (e.g., user denied access, misconfiguration)
+                showMessage(`Authentication failed: ${error_description || error}`, 'error');
+                clearSession();
                 updateUI();
             } else {
-                // No code or error, just check existing session
+                // No code or error, check if already logged in from previous session
                 updateUI();
             }
         });
