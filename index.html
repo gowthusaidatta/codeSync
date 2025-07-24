@@ -1,89 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CodeSync - Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeSync - AWS Cognito Hosted UI Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1, h2 { color: #007bff; margin-bottom: 20px; }
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 10px;
+        }
+        #loginButton {
+            background-color: #007bff;
+            color: white;
+        }
+        #loginButton:hover {
+            background-color: #0056b3;
+        }
+        #logoutButton {
+            background-color: #dc3545;
+            color: white;
+        }
+        #logoutButton:hover {
+            background-color: #c82333;
+        }
+        .section { margin-top: 25px; padding: 20px; border: 1px dashed #ccc; border-radius: 8px; background-color: #f9f9f9; text-align: left; }
+        .hidden { display: none; }
+        pre {
+            background-color: #eee;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 0.9em;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: inline-block;
+            text-align: left;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
 </head>
-<body class="bg-gray-900 text-white font-sans flex flex-col items-center justify-center min-h-screen p-6">
-  <div class="text-center">
-    <h1 class="text-4xl font-bold mb-4">🚀 Welcome to CodeSync</h1>
-    <p class="mb-6">Track your coding platform scores and progress.</p>
+<body>
+    <div class="container">
+        <h1>CodeSync - AWS Cognito Hosted UI</h1>
 
-    <div id="authButtons" class="space-x-4 mb-6">
-      <button id="loginBtn" class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">Login</button>
-      <button id="logoutBtn" class="px-4 py-2 bg-red-600 rounded hover:bg-red-700 hidden">Logout</button>
+        <div id="authRequiredSection">
+            <p>Please log in to access your profile.</p>
+            <button id="loginButton" onclick="redirectToCognitoLogin()">Login with Cognito</button>
+        </div>
+
+        <div id="authenticatedSection" class="hidden">
+            <h2>Welcome, <span id="displayUsername"></span>!</h2>
+            <p>You are logged in.</p>
+            <div class="section">
+                <h3>Your Profile Information (from ID Token)</h3>
+                <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+                <p><strong>Username:</strong> <span id="profilePreferredUsername"></span></p>
+                <p><strong>Cognito User ID:</strong> <span id="profileSub"></span></p>
+            </div>
+            <div class="section">
+                <h3>Your Tokens</h3>
+                <p><strong>ID Token:</strong></p>
+                <pre id="idTokenDisplay"></pre>
+                <p><strong>Access Token:</strong></p>
+                <pre id="accessTokenDisplay"></pre>
+                <p><strong>Refresh Token:</strong> (Stored securely, not displayed for security)</p>
+            </div>
+            <button id="logoutButton" onclick="redirectToCognitoLogout()">Logout</button>
+        </div>
+
+        <div id="messageDisplay" class="message hidden"></div>
     </div>
 
-    <div id="userInfo" class="bg-gray-800 p-4 rounded-lg shadow-lg hidden">
-      <p class="mb-2"><strong>User:</strong> <span id="username">loading...</span></p>
-      <a href="results.html" class="underline text-green-400">Go to Results Page ➡️</a>
-    </div>
-  </div>
+    <script>
+        // --- YOUR COGNITO CONFIGURATION ---
+        const USER_POOL_ID = 'us-east-1_RMhlKuGHS';
+        const APP_CLIENT_ID = '4g0bo9ac68vq4g817v1je4e5sf';
+        const COGNITO_DOMAIN = 'https://us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com';
+        const REDIRECT_URI = 'https://gowthusaidatta.github.io/codeSync/'; // Must exactly match your Cognito App Client setting
 
-  <script>
-    const clientId = "4g0bo9ac68vq4g817v1je4e5sf";
-    const domain = "us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com";
-    const redirectUri = "https://gowthusaidatta.github.io/codeSync/index.html";
+        // --- Cognito Endpoints ---
+        const LOGIN_URL = `${COGNITO_DOMAIN}/login?client_id=${APP_CLIENT_ID}&response_type=code&scope=email+openid+profile&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+        const TOKEN_ENDPOINT = `${COGNITO_DOMAIN}/oauth2/token`;
+        const LOGOUT_URL = `${COGNITO_DOMAIN}/logout?client_id=${APP_CLIENT_ID}&logout_uri=${encodeURIComponent(REDIRECT_URI)}`;
 
-    const loginUrl = `https://${domain}/login?client_id=${clientId}&response_type=token&scope=email+openid+profile&redirect_uri=${redirectUri}`;
-    const logoutUrl = `https://${domain}/logout?client_id=${clientId}&logout_uri=${redirectUri}`;
+        // --- UI Elements ---
+        const authRequiredSection = document.getElementById('authRequiredSection');
+        const authenticatedSection = document.getElementById('authenticatedSection');
+        const displayUsername = document.getElementById('displayUsername');
+        const profileEmail = document.getElementById('profileEmail');
+        const profilePreferredUsername = document.getElementById('profilePreferredUsername');
+        const profileSub = document.getElementById('profileSub');
+        const idTokenDisplay = document.getElementById('idTokenDisplay');
+        const accessTokenDisplay = document.getElementById('accessTokenDisplay');
+        const messageDisplay = document.getElementById('messageDisplay');
 
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const userInfo = document.getElementById("userInfo");
-    const usernameSpan = document.getElementById("username");
+        // --- Helper Functions ---
+        function showMessage(message, type) {
+            messageDisplay.textContent = message;
+            messageDisplay.className = `message ${type}`;
+            messageDisplay.classList.remove('hidden');
+        }
 
-    // Parse URL hash token
-    function getTokenFromUrl() {
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      return {
-        access_token: params.get("access_token"),
-        id_token: params.get("id_token"),
-        expires_in: params.get("expires_in"),
-        token_type: params.get("token_type")
-      };
-    }
+        function hideMessage() {
+            messageDisplay.classList.add('hidden');
+            messageDisplay.textContent = '';
+        }
 
-    function parseJwt(token) {
-      if (!token) return null;
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    }
+        // --- Base64 URL decode (for JWT) ---
+        function urlBase64Decode(str) {
+            let output = str.replace(/-/g, '+').replace(/_/g, '/');
+            switch (output.length % 4) {
+                case 0: break;
+                case 2: output += '=='; break;
+                case 3: output += '='; break;
+                default: throw 'Illegal base64url string!';
+            }
+            return decodeURIComponent(atob(output).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+        }
 
-    function showUser(token) {
-      const decoded = parseJwt(token);
-      if (decoded) {
-        usernameSpan.textContent = decoded.email || decoded["cognito:username"];
-        userInfo.classList.remove("hidden");
-        logoutBtn.classList.remove("hidden");
-        loginBtn.classList.add("hidden");
-      }
-    }
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error("Error parsing JWT:", e);
+                return null;
+            }
+        }
 
-    // On load
-    const tokens = getTokenFromUrl();
-    if (tokens.id_token) {
-      sessionStorage.setItem("id_token", tokens.id_token);
-      window.location.hash = ""; // Clean up URL
-    }
+        function setSession(idToken, accessToken, refreshToken) {
+            sessionStorage.setItem('id_token', idToken);
+            sessionStorage.setItem('access_token', accessToken);
+            sessionStorage.setItem('refresh_token', refreshToken);
+        }
 
-    const savedToken = sessionStorage.getItem("id_token");
-    if (savedToken) {
-      showUser(savedToken);
-    }
+        function clearSession() {
+            sessionStorage.removeItem('id_token');
+            sessionStorage.removeItem('access_token');
+            sessionStorage.removeItem('refresh_token');
+        }
 
-    loginBtn.onclick = () => window.location.href = loginUrl;
-    logoutBtn.onclick = () => {
-      sessionStorage.clear();
-      window.location.href = logoutUrl;
-    };
-  </script>
+        function getSession() {
+            return {
+                idToken: sessionStorage.getItem('id_token'),
+                accessToken: sessionStorage.getItem('access_token'),
+                refreshToken: sessionStorage.getItem('refresh_token')
+            };
+        }
+
+        function updateUI() {
+            const session = getSession();
+            if (session.idToken) {
+                authRequiredSection.classList.add('hidden');
+                authenticatedSection.classList.remove('hidden');
+                hideMessage();
+
+                const idTokenParsed = parseJwt(session.idToken);
+                if (idTokenParsed) {
+                    displayUsername.textContent = idTokenParsed.preferred_username || idTokenParsed.email || idTokenParsed.sub;
+                    profileEmail.textContent = idTokenParsed.email || 'N/A';
+                    profilePreferredUsername.textContent = idTokenParsed.preferred_username || 'N/A';
+                    profileSub.textContent = idTokenParsed.sub || 'N/A';
+                    idTokenDisplay.textContent = JSON.stringify(idTokenParsed, null, 2);
+                }
+                accessTokenDisplay.textContent = session.accessToken;
+            } else {
+                authRequiredSection.classList.remove('hidden');
+                authenticatedSection.classList.add('hidden');
+                hideMessage();
+            }
+        }
+
+        // --- Cognito Specific Functions ---
+
+        function redirectToCognitoLogin() {
+            window.location.href = LOGIN_URL;
+        }
+
+        function redirectToCognitoLogout() {
+            clearSession();
+            window.location.href = LOGOUT_URL;
+        }
+
+        async function exchangeCodeForTokens(code) {
+            try {
+                const response = await fetch(TOKEN_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        client_id: APP_CLIENT_ID,
+                        code: code,
+                        redirect_uri: REDIRECT_URI
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Failed to exchange code: ${errorData.error_description || errorData.error || response.statusText}`);
+                }
+
+                const data = await response.json();
+                setSession(data.id_token, data.access_token, data.refresh_token);
+                showMessage('Successfully logged in!', 'success');
+                // Remove code from URL to clean it up
+                window.history.replaceState({}, document.title, window.location.pathname);
+                updateUI();
+            } catch (error) {
+                console.error('Error exchanging code for tokens:', error);
+                showMessage(`Login error: ${error.message}`, 'error');
+                clearSession();
+                updateUI();
+            }
+        }
+
+        // --- On Page Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            const error = params.get('error');
+            const error_description = params.get('error_description');
+
+            if (code) {
+                // We have an authorization code, exchange it for tokens
+                exchangeCodeForTokens(code);
+            } else if (error) {
+                // Cognito returned an error (e.g., user denied access, misconfiguration)
+                showMessage(`Authentication failed: ${error_description || error}`, 'error');
+                clearSession();
+                updateUI();
+            } else {
+                // No code or error, check if already logged in from previous session
+                updateUI();
+            }
+        });
+    </script>
 </body>
 </html>
