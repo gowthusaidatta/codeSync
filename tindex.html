@@ -3,200 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeSync</title>
+    <title>CodeSync | Authentication</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- AWS SDKs -->
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1121.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@5.2.10/dist/amazon-cognito-identity.min.js"></script>
     <style>
-        .auth-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            min-height: 100vh;
+            margin: 0;
             display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .auth-btn {
-            background: rgba(99, 102, 241, 0.7);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        .auth-btn:hover {
-            background: rgba(99, 102, 241, 0.9);
-            transform: translateY(-1px);
-        }
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            display: flex;
-            align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: bold;
+            align-items: center;
         }
-        .hidden {
-            display: none;
+        
+        .auth-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo-gradient {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .signin-btn {
+            background: linear-gradient(90deg, #3b82f6, #6366f1);
+            transition: all 0.3s ease;
+        }
+        
+        .signup-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
         }
     </style>
 </head>
-<body class="bg-gray-900 min-h-screen">
-    <!-- Auth Container -->
-    <div class="auth-container">
-        <button id="loginBtn" class="auth-btn">Sign In</button>
-        <div id="userProfile" class="hidden flex items-center gap-3">
-            <div class="user-avatar" id="userAvatar"></div>
-            <button id="logoutBtn" class="auth-btn">Sign Out</button>
+<body>
+    <div class="w-full max-w-sm mx-4">
+        <div class="auth-card rounded-xl p-8">
+            <!-- Logo and Header -->
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold logo-gradient mb-1">CodeSync</h1>
+                <p class="text-gray-400">Your unified coding profile</p>
+            </div>
+            
+            <!-- Auth Buttons -->
+            <div class="space-y-4">
+                <button id="signInBtn" class="signin-btn w-full py-3 px-4 rounded-lg text-white font-semibold">
+                    Sign In
+                </button>
+                <button id="signUpBtn" class="signup-btn w-full py-3 px-4 rounded-lg text-white font-semibold">
+                    Sign Up
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Your existing app content -->
-    <div class="container mx-auto px-4 py-16">
-        <!-- Your main content here -->
-    </div>
-
     <script>
-        // 1. AWS Cognito Configuration - VERIFY THESE VALUES
-        const awsConfig = {
-            region: 'us-east-1',
-            userPoolId: 'us-east-1_RMhlKuGHS',
-            userPoolWebClientId: '4g0bo9ac68vq4g817v1je4e5sf',
-            domain: 'us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com' // From your Cognito settings
+        // AWS Cognito Configuration
+        const cognitoConfig = {
+            domain: 'us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com',
+            clientId: '4g0bo9ac68vq4g817v1je4e5sf',
+            redirectUri: encodeURIComponent('https://gowthusaidatta.github.io/codeSync/'),
+            responseType: 'code',
+            scopes: ['aws.cognito.signin.user.admin', 'email', 'openid', 'profile'].join('+')
         };
-
-        // 2. Initialize AWS and Cognito
-        AWS.config.update({ region: awsConfig.region });
         
-        const userPool = new AmazonCognitoIdentity.CognitoUserPool({
-            UserPoolId: awsConfig.userPoolId,
-            ClientId: awsConfig.userPoolWebClientId
-        });
-
-        // 3. Authentication Functions
-        function checkAuthState() {
-            const cognitoUser = userPool.getCurrentUser();
-            
-            if (cognitoUser) {
-                cognitoUser.getSession((err, session) => {
-                    if (err || !session.isValid()) {
-                        showLogin();
-                    } else {
-                        showUserProfile(cognitoUser);
-                    }
-                });
-            } else {
-                showLogin();
-            }
+        // Build Cognito URL
+        function buildCognitoUrl(isSignUp = false) {
+            const authType = isSignUp ? 'signup' : 'login';
+            return `https://${cognitoConfig.domain}/${authType}?` +
+                   `client_id=${cognitoConfig.clientId}&` +
+                   `response_type=${cognitoConfig.responseType}&` +
+                   `scope=${cognitoConfig.scopes}&` +
+                   `redirect_uri=${cognitoConfig.redirectUri}` +
+                   (isSignUp ? '&signup=true' : '');
         }
-
-        function showLogin() {
-            document.getElementById('loginBtn').classList.remove('hidden');
-            document.getElementById('userProfile').classList.add('hidden');
-        }
-
-        function showUserProfile(cognitoUser) {
-            document.getElementById('loginBtn').classList.add('hidden');
-            document.getElementById('userProfile').classList.remove('hidden');
-            
-            cognitoUser.getUserAttributes((err, attributes) => {
-                if (err) return;
-                
-                const email = attributes.find(attr => attr.Name === 'email')?.Value;
-                if (email) {
-                    document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
-                }
-            });
-        }
-
-        // 4. Event Listeners
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            const redirectUri = encodeURIComponent('https://gowthusaidatta.github.io/codeSync/index.html');
-            const loginUrl = `https://${awsConfig.domain}/login?` +
-                `client_id=${awsConfig.userPoolWebClientId}` +
-                `&response_type=code` +
-                `&scope=openid+profile+email` +
-                `&redirect_uri=${redirectUri}`;
-            
-            window.location.href = loginUrl;
+        
+        // Button Event Listeners
+        document.getElementById('signInBtn').addEventListener('click', () => {
+            window.location.href = buildCognitoUrl(false);
         });
-
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            const cognitoUser = userPool.getCurrentUser();
-            if (cognitoUser) {
-                cognitoUser.signOut();
-                showLogin();
-            }
+        
+        document.getElementById('signUpBtn').addEventListener('click', () => {
+            window.location.href = buildCognitoUrl(true);
         });
-
-        // 5. Handle Authentication Callback
-        function handleAuthCallback() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            
-            if (code) {
-                // Clean URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-                
-                // Exchange authorization code for tokens
-                const tokenUrl = `https://${awsConfig.domain}/oauth2/token`;
-                const redirectUri = 'https://gowthusaidatta.github.io/codeSync/index.html';
-                
-                const body = new URLSearchParams();
-                body.append('grant_type', 'authorization_code');
-                body.append('client_id', awsConfig.userPoolWebClientId);
-                body.append('code', code);
-                body.append('redirect_uri', redirectUri);
-                
-                fetch(tokenUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: body
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.id_token) {
-                        // Create Cognito user session
-                        const userData = {
-                            Username: data.id_token.payload['cognito:username'],
-                            Pool: userPool
-                        };
-                        
-                        const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
-                        
-                        const sessionData = {
-                            IdToken: new AmazonCognitoIdentity.CognitoIdToken({ IdToken: data.id_token }),
-                            AccessToken: new AmazonCognitoIdentity.CognitoAccessToken({ AccessToken: data.access_token }),
-                            RefreshToken: new AmazonCognitoIdentity.CognitoRefreshToken({ RefreshToken: data.refresh_token })
-                        };
-                        
-                        const session = new AmazonCognitoIdentity.CognitoUserSession(sessionData);
-                        cognitoUser.setSignInUserSession(session);
-                        
-                        checkAuthState();
-                    }
-                })
-                .catch(error => {
-                    console.error('Authentication error:', error);
-                    showLogin();
-                });
-            }
+        
+        // Optional: Auto-redirect if coming back from Cognito with code
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('code')) {
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
-
-        // 6. Initialize when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuthState();
-            handleAuthCallback();
-        });
     </script>
 </body>
 </html>
