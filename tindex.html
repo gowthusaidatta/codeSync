@@ -1,69 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- ... keep existing head content ... -->
-    <!-- Add these scripts -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- AWS SDKs -->
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1121.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@5.2.10/dist/amazon-cognito-identity.min.js"></script>
     <style>
-        /* Add auth styles */
         .auth-container {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            display: flex;
-            gap: 0.5rem;
+            position: fixed;
+            top: 20px;
+            right: 20px;
             z-index: 1000;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
-        .auth-button {
-            background: rgba(255, 255, 255, 0.1);
+        .auth-btn {
+            background: rgba(99, 102, 241, 0.7);
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
             cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
-        .auth-button:hover {
-            background: rgba(255, 255, 255, 0.2);
+        .auth-btn:hover {
+            background: rgba(99, 102, 241, 0.9);
+            transform: translateY(-1px);
+        }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
         }
         .hidden {
-            display: none !important;
+            display: none;
         }
     </style>
 </head>
-<body>
-    <!-- Add this auth container at the top of your body -->
+<body class="bg-gray-900 min-h-screen">
+    <!-- Auth Container -->
     <div class="auth-container">
-        <button id="loginButton" class="auth-button">Sign In</button>
-        <div id="userInfo" class="hidden">
-            <span id="username" class="text-white mr-2"></span>
-            <button id="logoutButton" class="auth-button">Sign Out</button>
+        <button id="loginBtn" class="auth-btn">Sign In</button>
+        <div id="userProfile" class="hidden flex items-center gap-3">
+            <div class="user-avatar" id="userAvatar"></div>
+            <button id="logoutBtn" class="auth-btn">Sign Out</button>
         </div>
     </div>
 
-    <!-- Your existing content remains here -->
+    <!-- Your existing app content -->
+    <div class="container mx-auto px-4 py-16">
+        <!-- Your main content here -->
+    </div>
 
     <script>
-        // AWS Cognito Configuration - UPDATE THESE VALUES
+        // 1. AWS Cognito Configuration - VERIFY THESE VALUES
         const awsConfig = {
-            region: 'us-east-1', // Your AWS region
-            userPoolId: 'us-east-1_RMhlKuGHS', // Your User Pool ID
-            userPoolWebClientId: '4g0bo9ac68vq4g817v1je4e5sf', // Your App Client ID
-            domain: 'codingsync.auth.us-east-1.amazoncognito.com' // Your Cognito Domain
+            region: 'us-east-1',
+            userPoolId: 'us-east-1_RMhlKuGHS',
+            userPoolWebClientId: '4g0bo9ac68vq4g817v1je4e5sf',
+            domain: 'us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com' // From your Cognito settings
         };
 
-        // Initialize AWS
+        // 2. Initialize AWS and Cognito
         AWS.config.update({ region: awsConfig.region });
-
-        // Initialize Cognito
+        
         const userPool = new AmazonCognitoIdentity.CognitoUserPool({
             UserPoolId: awsConfig.userPoolId,
             ClientId: awsConfig.userPoolWebClientId
         });
 
-        // Check if user is authenticated
-        function checkAuth() {
+        // 3. Authentication Functions
+        function checkAuthState() {
             const cognitoUser = userPool.getCurrentUser();
             
             if (cognitoUser) {
@@ -71,7 +89,7 @@
                     if (err || !session.isValid()) {
                         showLogin();
                     } else {
-                        showUserInfo(cognitoUser);
+                        showUserProfile(cognitoUser);
                     }
                 });
             } else {
@@ -79,39 +97,38 @@
             }
         }
 
-        // Show login button
         function showLogin() {
-            document.getElementById('loginButton').classList.remove('hidden');
-            document.getElementById('userInfo').classList.add('hidden');
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('userProfile').classList.add('hidden');
         }
 
-        // Show user info
-        function showUserInfo(cognitoUser) {
-            document.getElementById('loginButton').classList.add('hidden');
-            document.getElementById('userInfo').classList.remove('hidden');
+        function showUserProfile(cognitoUser) {
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('userProfile').classList.remove('hidden');
             
             cognitoUser.getUserAttributes((err, attributes) => {
-                if (err) {
-                    console.error('Error getting user attributes:', err);
-                    return;
-                }
+                if (err) return;
                 
-                const emailAttr = attributes.find(attr => attr.Name === 'email');
-                if (emailAttr) {
-                    document.getElementById('username').textContent = emailAttr.Value;
+                const email = attributes.find(attr => attr.Name === 'email')?.Value;
+                if (email) {
+                    document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
                 }
             });
         }
 
-        // Handle login
-        document.getElementById('loginButton').addEventListener('click', () => {
+        // 4. Event Listeners
+        document.getElementById('loginBtn').addEventListener('click', () => {
             const redirectUri = encodeURIComponent('https://gowthusaidatta.github.io/codeSync/index.html');
-            const loginUrl = `https://${awsConfig.domain}/login?response_type=code&client_id=${awsConfig.userPoolWebClientId}&redirect_uri=${redirectUri}`;
+            const loginUrl = `https://${awsConfig.domain}/login?` +
+                `client_id=${awsConfig.userPoolWebClientId}` +
+                `&response_type=code` +
+                `&scope=openid+profile+email` +
+                `&redirect_uri=${redirectUri}`;
+            
             window.location.href = loginUrl;
         });
 
-        // Handle logout
-        document.getElementById('logoutButton').addEventListener('click', () => {
+        document.getElementById('logoutBtn').addEventListener('click', () => {
             const cognitoUser = userPool.getCurrentUser();
             if (cognitoUser) {
                 cognitoUser.signOut();
@@ -119,13 +136,13 @@
             }
         });
 
-        // Handle authentication callback
+        // 5. Handle Authentication Callback
         function handleAuthCallback() {
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             
             if (code) {
-                // Remove code from URL
+                // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname);
                 
                 // Exchange authorization code for tokens
@@ -165,21 +182,20 @@
                         const session = new AmazonCognitoIdentity.CognitoUserSession(sessionData);
                         cognitoUser.setSignInUserSession(session);
                         
-                        checkAuth();
+                        checkAuthState();
                     }
                 })
                 .catch(error => {
-                    console.error('Error during token exchange:', error);
+                    console.error('Authentication error:', error);
+                    showLogin();
                 });
             }
         }
 
-        // Initialize authentication
+        // 6. Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
+            checkAuthState();
             handleAuthCallback();
-            
-            // Your existing DOMContentLoaded code...
         });
     </script>
 </body>
