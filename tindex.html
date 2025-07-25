@@ -1,115 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeSync | Authentication</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .auth-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        .logo-gradient {
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        .signin-btn {
-            background: linear-gradient(90deg, #3b82f6, #6366f1);
-            transition: all 0.3s ease;
-        }
-        
-        .signup-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        
-        .auth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSync Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="w-full max-w-sm mx-4">
-        <div class="auth-card rounded-xl p-8">
-            <!-- Logo and Header -->
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                    </svg>
-                </div>
-                <h1 class="text-3xl font-bold logo-gradient mb-1">CodeSync</h1>
-                <p class="text-gray-400">Your unified coding profile</p>
-            </div>
-            
-            <!-- Auth Buttons -->
-            <div class="space-y-4">
-                <button id="signInBtn" class="signin-btn w-full py-3 px-4 rounded-lg text-white font-semibold">
-                    Sign In
-                </button>
-                <button id="signUpBtn" class="signup-btn w-full py-3 px-4 rounded-lg text-white font-semibold">
-                    Sign Up
-                </button>
-            </div>
-        </div>
-    </div>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
 
-    <script>
-        // AWS Cognito Configuration
-        const cognitoConfig = {
-            domain: 'us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com',
-            clientId: '4g0bo9ac68vq4g817v1je4e5sf',
-            redirectUri: encodeURIComponent('https://gowthusaidatta.github.io/codeSync/'),
-            responseType: 'code',
-            scopes: ['aws.cognito.signin.user.admin', 'email', 'openid', 'profile'].join('+')
-        };
-        
-        // Build Cognito URL
-        function buildCognitoUrl(isSignUp = false) {
-            const authType = isSignUp ? 'signup' : 'login';
-            return `https://${cognitoConfig.domain}/${authType}?` +
-                   `client_id=${cognitoConfig.clientId}&` +
-                   `response_type=${cognitoConfig.responseType}&` +
-                   `scope=${cognitoConfig.scopes}&` +
-                   `redirect_uri=${cognitoConfig.redirectUri}` +
-                   (isSignUp ? '&signup=true' : '');
-        }
-        
-        // Button Event Listeners
-        document.getElementById('signInBtn').addEventListener('click', () => {
-            window.location.href = buildCognitoUrl(false);
-        });
-        
-        document.getElementById('signUpBtn').addEventListener('click', () => {
-            window.location.href = buildCognitoUrl(true);
-        });
-        
-        // Optional: Auto-redirect if coming back from Cognito with code
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('code')) {
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    </script>
+  <div class="text-center space-y-8">
+    <h1 class="text-5xl font-bold text-indigo-400">CodeSync</h1>
+
+    <div class="space-x-4">
+      <a href="https://us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com/login?client_id=4g0bo9ac68vq4g817v1je4e5sf&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+profile&redirect_uri=https%3A%2F%2Fgowthusaidatta.github.io%2FcodeSync%2F">
+        <button class="bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-xl text-white text-lg shadow-lg transition">Sign In</button>
+      </a>
+
+      <a href="https://us-east-1rmhlkughs.auth.us-east-1.amazoncognito.com/login?client_id=4g0bo9ac68vq4g817v1je4e5sf&response_type=code&scope=aws.cognito.signin.user.admin+email+openid+profile&redirect_uri=https%3A%2F%2Fgowthusaidatta.github.io%2FcodeSync%2F">
+        <button class="bg-indigo-500 hover:bg-indigo-600 px-6 py-2 rounded-xl text-white text-lg shadow-lg transition">Sign Up</button>
+      </a>
+    </div>
+  </div>
+
 </body>
 </html>
