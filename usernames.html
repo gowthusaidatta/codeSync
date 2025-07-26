@@ -1,10 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CodeTrack | Usernames</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.amazoncognito.com https://cdn.jsdelivr.net; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://*.amazoncognito.com https://leetcode.com https://cdn.codechef.com https://upload.wikimedia.org https://media.geeksforgeeks.org;">
+  <title>CodeSync | Usernames</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/aws-amplify@4.3.27/dist/aws-amplify.min.js"></script>
   <script src="./js/amplify_config.js"></script>
@@ -20,11 +20,12 @@
       z-index: 1000;
       transform: translateX(200%);
       transition: transform 0.3s ease;
-      background-color: #ef4444;
     }
     .notification.show {
       transform: translateX(0);
     }
+    .error { background-color: #ef4444; }
+    .success { background-color: #10b981; }
   </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
@@ -36,15 +37,15 @@
     <div class="space-y-4">
       <div>
         <label class="block text-left text-gray-300 mb-1">LeetCode</label>
-        <input id="leetcode" placeholder="username" class="w-full p-3 rounded-lg bg-gray-800">
+        <input id="leetcode" placeholder="username" class="w-full p-3 rounded-lg bg-gray-800" required>
       </div>
       <div>
         <label class="block text-left text-gray-300 mb-1">CodeChef</label>
-        <input id="codechef" placeholder="username" class="w-full p-3 rounded-lg bg-gray-800">
+        <input id="codechef" placeholder="username" class="w-full p-3 rounded-lg bg-gray-800" required>
       </div>
       <div>
         <label class="block text-left text-gray-300 mb-1">HackerRank</label>
-        <input id="hackerrank" placeholder="username" class="w-full p-3 rounded-lg bg-gray-800">
+        <input id="hackerrank" placeholder="username" class="w-full p-3 rounded-lg bg-gray-800" required>
       </div>
       <div>
         <label class="block text-left text-gray-300 mb-1">GeeksForGeeks (Optional)</label>
@@ -66,44 +67,54 @@
 
     const ids = ["leetcode", "codechef", "hackerrank", "gfg"];
 
-    function showNotification(message) {
+    function showNotification(message, type = 'error') {
       const notification = document.getElementById('notification');
       notification.textContent = message;
-      notification.classList.remove('hidden');
-      notification.classList.add('show');
+      notification.className = `notification ${type} show`;
       setTimeout(() => {
         notification.classList.remove('show');
       }, 5000);
     }
 
-    // Check authentication
+    // Check authentication on load
     Auth.currentAuthenticatedUser()
-      .then(() => {
-        // Auto-fill usernames from localStorage if available
+      .then(user => {
+        if (!user) throw new Error("Not authenticated");
+        // Auto-fill usernames from localStorage
         ids.forEach(id => {
-          const saved = localStorage.getItem(`codetrack_username_${id}`);
+          const saved = localStorage.getItem(`codesync_username_${id}`);
           if (saved) document.getElementById(id).value = saved;
         });
       })
-      .catch(() => {
+      .catch(err => {
         showNotification("Please login first");
+        console.error(err);
         setTimeout(() => window.location.href = "index.html", 2000);
       });
 
+    function validateInputs() {
+      const leetcode = document.getElementById('leetcode').value.trim();
+      const codechef = document.getElementById('codechef').value.trim();
+      const hackerrank = document.getElementById('hackerrank').value.trim();
+      
+      if (!leetcode || !codechef || !hackerrank) {
+        showNotification("Please enter required usernames");
+        return false;
+      }
+      return true;
+    }
+
     function goToResults() {
+      if (!validateInputs()) return;
+      
       const params = new URLSearchParams();
       ids.forEach(id => {
         const val = document.getElementById(id).value.trim();
         if (val) {
           params.append(id, val);
-          localStorage.setItem(`codetrack_username_${id}`, val);
+          localStorage.setItem(`codesync_username_${id}`, val);
         }
       });
-      
-      if (!params.get('leetcode') || !params.get('codechef') || !params.get('hackerrank')) {
-        showNotification("Please enter required usernames");
-        return;
-      }
       
       window.location.href = `dashboard.html?${params.toString()}`;
     }
@@ -111,7 +122,9 @@
     async function logout() {
       try {
         await Auth.signOut();
-        showNotification("Logged out successfully");
+        // Clear stored usernames
+        ids.forEach(id => localStorage.removeItem(`codesync_username_${id}`));
+        showNotification("Logged out successfully", "success");
         setTimeout(() => window.location.href = "index.html", 1500);
       } catch (err) {
         showNotification(err.message || "Logout failed");
