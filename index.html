@@ -7,8 +7,29 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/aws-amplify@4.3.27/dist/aws-amplify.min.js"></script>
   <script src="./js/amplify_config.js"></script>
+  <style>
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      transform: translateX(200%);
+      transition: transform 0.3s ease;
+    }
+    .notification.show {
+      transform: translateX(0);
+    }
+    .error { background-color: #ef4444; }
+    .success { background-color: #10b981; }
+  </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+  <div id="notification" class="notification hidden"></div>
+
   <div class="bg-white/10 backdrop-blur-md p-8 rounded-xl w-96 space-y-6 text-center shadow-lg">
     <h1 class="text-3xl font-bold text-purple-400 mb-2">CodeTrack</h1>
     <p class="text-gray-300 mb-6">Track your coding progress across platforms</p>
@@ -19,7 +40,7 @@
       <button onclick="login()" class="bg-purple-600 hover:bg-purple-700 w-full py-3 rounded-lg font-semibold text-white">
         Sign In
       </button>
-      <button onclick="signUp()" class="text-sm text-gray-300 hover:underline mt-4">Create new account</button>
+      <button onclick="showSignUp()" class="text-sm text-gray-300 hover:underline mt-4">Create new account</button>
     </div>
 
     <div id="confirmation-container" class="hidden">
@@ -27,6 +48,7 @@
       <button onclick="confirmSignUp()" class="bg-purple-600 hover:bg-purple-700 w-full py-3 rounded-lg font-semibold text-white">
         Verify Account
       </button>
+      <button onclick="showLogin()" class="text-sm text-gray-300 hover:underline mt-4">Back to Login</button>
     </div>
   </div>
 
@@ -34,6 +56,30 @@
     const amplify = window.aws_amplify;
     const { Auth } = amplify;
     Auth.configure(window.amplifyConfig);
+
+    // Check if already authenticated
+    Auth.currentAuthenticatedUser()
+      .then(() => window.location.href = "usernames.html")
+      .catch(() => console.log("Not authenticated"));
+
+    function showNotification(message, type = 'error') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = `notification ${type} show`;
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 5000);
+    }
+
+    function showSignUp() {
+      document.getElementById('login-container').classList.add('hidden');
+      document.getElementById('confirmation-container').classList.remove('hidden');
+    }
+
+    function showLogin() {
+      document.getElementById('login-container').classList.remove('hidden');
+      document.getElementById('confirmation-container').classList.add('hidden');
+    }
 
     async function login() {
       const username = document.getElementById('username').value;
@@ -43,7 +89,7 @@
         await Auth.signIn(username, password);
         window.location.href = "usernames.html";
       } catch (err) {
-        alert("Login failed: " + err.message);
+        showNotification(err.message || "Login failed");
       }
     }
 
@@ -59,10 +105,10 @@
             email: username
           }
         });
-        document.getElementById('login-container').classList.add('hidden');
-        document.getElementById('confirmation-container').classList.remove('hidden');
+        showNotification("Verification code sent to your email", "success");
+        showSignUp();
       } catch (err) {
-        alert("Sign up failed: " + err.message);
+        showNotification(err.message || "Sign up failed");
       }
     }
 
@@ -72,11 +118,10 @@
       
       try {
         await Auth.confirmSignUp(username, code);
-        alert("Account verified! You can now login.");
-        document.getElementById('login-container').classList.remove('hidden');
-        document.getElementById('confirmation-container').classList.add('hidden');
+        showNotification("Account verified! You can now login.", "success");
+        showLogin();
       } catch (err) {
-        alert("Verification failed: " + err.message);
+        showNotification(err.message || "Verification failed");
       }
     }
   </script>
