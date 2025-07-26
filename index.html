@@ -1,10 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CodeTrack | Login</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.amazoncognito.com https://cdn.jsdelivr.net; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://*.amazoncognito.com https://leetcode.com https://cdn.codechef.com https://upload.wikimedia.org https://media.geeksforgeeks.org;">
+  <title>CodeSync | Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/aws-amplify@4.3.27/dist/aws-amplify.min.js"></script>
   <script src="./js/amplify_config.js"></script>
@@ -32,12 +32,12 @@
   <div id="notification" class="notification hidden"></div>
 
   <div class="bg-white/10 backdrop-blur-md p-8 rounded-xl w-96 space-y-6 text-center shadow-lg">
-    <h1 class="text-3xl font-bold text-purple-400 mb-2">CodeTrack</h1>
+    <h1 class="text-3xl font-bold text-purple-400 mb-2">CodeSync</h1>
     <p class="text-gray-300 mb-6">Track your coding progress across platforms</p>
     
     <div id="login-container">
-      <input id="username" placeholder="Email" class="w-full p-3 rounded-lg bg-gray-800 mb-4">
-      <input id="password" type="password" placeholder="Password" class="w-full p-3 rounded-lg bg-gray-800 mb-6">
+      <input id="username" placeholder="Email" class="w-full p-3 rounded-lg bg-gray-800 mb-4" autocomplete="username">
+      <input id="password" type="password" placeholder="Password" class="w-full p-3 rounded-lg bg-gray-800 mb-6" autocomplete="current-password">
       <button onclick="login()" class="bg-purple-600 hover:bg-purple-700 w-full py-3 rounded-lg font-semibold text-white">
         Sign In
       </button>
@@ -45,7 +45,7 @@
     </div>
 
     <div id="confirmation-container" class="hidden">
-      <input id="confirmation-code" placeholder="Confirmation Code" class="w-full p-3 rounded-lg bg-gray-800 mb-4">
+      <input id="confirmation-code" placeholder="Confirmation Code" class="w-full p-3 rounded-lg bg-gray-800 mb-4" autocomplete="one-time-code">
       <button onclick="confirmSignUp()" class="bg-purple-600 hover:bg-purple-700 w-full py-3 rounded-lg font-semibold text-white">
         Verify Account
       </button>
@@ -86,6 +86,11 @@
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
+      if (!username || !password) {
+        showNotification("Please enter both email and password");
+        return;
+      }
+
       try {
         await Auth.signIn(username, password);
         window.location.href = "usernames.html";
@@ -98,6 +103,11 @@
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
+      if (!username || !password) {
+        showNotification("Please enter both email and password");
+        return;
+      }
+
       try {
         await Auth.signUp({
           username,
@@ -117,6 +127,11 @@
       const username = document.getElementById('username').value;
       const code = document.getElementById('confirmation-code').value;
       
+      if (!code) {
+        showNotification("Please enter verification code");
+        return;
+      }
+
       try {
         await Auth.confirmSignUp(username, code);
         showNotification("Account verified! You can now login.", "success");
