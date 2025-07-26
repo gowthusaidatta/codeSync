@@ -7,8 +7,28 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/aws-amplify@4.3.27/dist/aws-amplify.min.js"></script>
   <script src="./js/amplify_config.js"></script>
+  <style>
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      transform: translateX(200%);
+      transition: transform 0.3s ease;
+      background-color: #ef4444;
+    }
+    .notification.show {
+      transform: translateX(0);
+    }
+  </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+  <div id="notification" class="notification hidden"></div>
+
   <div class="bg-white/10 backdrop-blur-md p-8 rounded-xl w-96 space-y-6 text-center shadow-lg">
     <h1 class="text-2xl font-bold text-purple-400">🔗 Enter Platform Usernames</h1>
 
@@ -39,24 +59,35 @@
   </div>
 
   <script>
+    const amplify = window.aws_amplify;
+    const { Auth } = amplify;
+    Auth.configure(window.amplifyConfig);
+
     const ids = ["leetcode", "codechef", "hackerrank", "gfg"];
 
-    window.addEventListener("load", () => {
-      const amplify = window.aws_amplify;
-      const { Auth } = amplify;
-      Auth.configure(window.amplifyConfig);
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.classList.remove('hidden');
+      notification.classList.add('show');
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 5000);
+    }
 
-      // Redirect to login if not authenticated
-      Auth.currentAuthenticatedUser().catch(() => {
-        window.location.href = "index.html";
+    // Check authentication
+    Auth.currentAuthenticatedUser()
+      .then(() => {
+        // Auto-fill usernames from localStorage if available
+        ids.forEach(id => {
+          const saved = localStorage.getItem(`codetrack_username_${id}`);
+          if (saved) document.getElementById(id).value = saved;
+        });
+      })
+      .catch(() => {
+        showNotification("Please login first");
+        setTimeout(() => window.location.href = "index.html", 2000);
       });
-
-      // Auto-fill usernames from localStorage if available
-      ids.forEach(id => {
-        const saved = localStorage.getItem(`codetrack_username_${id}`);
-        if (saved) document.getElementById(id).value = saved;
-      });
-    });
 
     function goToResults() {
       const params = new URLSearchParams();
@@ -67,16 +98,22 @@
           localStorage.setItem(`codetrack_username_${id}`, val);
         }
       });
+      
+      if (!params.get('leetcode') || !params.get('codechef') || !params.get('hackerrank')) {
+        showNotification("Please enter required usernames");
+        return;
+      }
+      
       window.location.href = `dashboard.html?${params.toString()}`;
     }
 
     async function logout() {
       try {
-        const { Auth } = window.aws_amplify;
         await Auth.signOut();
-        window.location.href = "index.html";
+        showNotification("Logged out successfully");
+        setTimeout(() => window.location.href = "index.html", 1500);
       } catch (err) {
-        alert("Logout failed: " + err.message);
+        showNotification(err.message || "Logout failed");
       }
     }
   </script>
