@@ -1,0 +1,123 @@
+#ai-sidebar {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  background-color: #1a73e8;
+  border-radius: 30px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  z-index: 2147483647; /* Max z-index */
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  cursor: grab;
+  color: black;
+}
+
+#ai-sidebar.collapsed {
+  width: 60px;
+  height: 60px;
+}
+
+#ai-sidebar.expanded {
+  width: 400px;
+  height: auto;
+  min-height: 400px;
+  max-height: 90vh;
+  background-color: #f4f7f9;
+}
+
+#sidebar-toggle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+#ai-sidebar.expanded #sidebar-toggle {
+  color: #1a73e8;
+}
+
+#sidebar-content {
+  padding: 20px 20px 20px 80px;
+  height: calc(100% - 40px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+#ai-sidebar.expanded #sidebar-content {
+  opacity: 1;
+}
+
+.container {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  height: 100%;
+}
+
+h1 {
+  color: #1a73e8;
+  font-size: 18px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+textarea {
+  width: calc(100% - 20px);
+  height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 10px;
+  resize: vertical;
+}
+
+button {
+  width: 100%;
+  padding: 8px;
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:hover { background-color: #155ab6; }
+
+button:disabled {
+  background-color: #9ac3f5;
+  cursor: not-allowed;
+}
+
+.status {
+  text-align: center;
+  color: #666;
+  margin: 10px 0;
+  font-size: 12px;
+}
+
+#response-container {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  font-size: 14px;
+  max-height: 200px;
+  overflow-y: auto;
+  word-wrap: break-word;
+}
