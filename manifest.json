@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Pandu AI Assistant",
+  "version": "1.0",
+  "description": "A draggable AI assistant that works on any website.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": "icon.png",
+    "default_title": "Open Pandu AI"
+  },
+  "icons": {
+    "48": "icon.png"
+  }
+}```
+
+*You'll also need a simple icon file (e.g., `icon.png` of 48x48 pixels) in the same folder.*
+
+#### **3. Create a `background.js` File**
+
+This script will listen for a click on the extension's icon and inject the assistant into the current page.
+
+```javascript
+chrome.action.onClicked.addListener((tab) => {
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ['content.js']
+  });
+  chrome.scripting.insertCSS({
+    target: { tabId: tab.id },
+    files: ['pandu.css']
+  });
+});
