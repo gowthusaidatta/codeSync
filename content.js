@@ -1,64 +1,120 @@
-/* --- All previous CSS remains the same --- */
+(async () => {
+  // --- IMPORTANT SECURITY WARNING ---
+  // Avoid hardcoding your API key. 
+  // It's better to ask the user for it and store it in chrome.storage.
+  const API_KEY = "YOUR_GEMINI_API_KEY"; // Replace with your key
 
-#ai-sidebar {
-  position: fixed;
-  width: 60px;
-  height: 60px;
-  background-color: #1a73e8;
-  border-radius: 30px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  z-index: 2147483647; /* Max z-index */
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  transition: all 0.3s ease;
-  overflow: hidden;
-  cursor: grab;
-  color: black;
-}
+  // Fetch and inject the sidebar HTML
+  const sidebarHtmlUrl = chrome.runtime.getURL('pandu-ai-sidebar.html');
+  const response = await fetch(sidebarHtmlUrl);
+  const sidebarHtml = await response.text();
+  document.body.insertAdjacentHTML('beforeend', sidebarHtml);
 
-#ai-sidebar.expanded {
-  width: 400px;
-  height: 500px; /* Set a default expanded height */
-  min-height: 300px; /* Add min dimensions */
-  min-width: 300px; /* Add min dimensions */
-  max-height: 95vh; /* Add max dimensions */
-  max-width: 95vw; /* Add max dimensions */
-  background-color: #f4f7f9;
-  overflow: visible; /* Change overflow to allow handle to be seen */
-}
+  // Get elements from the injected HTML
+  const sidebar = document.getElementById('ai-sidebar');
+  const toggleButton = document.getElementById('sidebar-toggle');
+  const submitButton = document.getElementById('submit-button');
+  const promptInput = document.getElementById('prompt-input');
+  const responseContainer = document.getElementById('response-container');
+  const statusMessage = document.getElementById('status-message');
+  const resizeHandle = document.getElementById('resize-handle'); // Get the new handle
 
-/* --- Other styles like .collapsed, #sidebar-toggle, etc. remain the same --- */
+  // --- Draggable functionality (remains the same) ---
+  let isDragging = false;
+  let offsetX, offsetY;
 
-#ai-sidebar.expanded #sidebar-content {
-  opacity: 1;
-}
+  const move = (e) => {
+    if (!isDragging) return;
+    const x = e.clientX - offsetX;
+    const y = e.clientY - offsetY;
+    sidebar.style.left = `${x}px`;
+    sidebar.style.top = `${y}px`;
+    sidebar.style.right = 'auto';
+    sidebar.style.transform = 'none';
+  };
 
-.container {
-  background-color: #ffffff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  height: 100%;
-  box-sizing: border-box; /* Ensures padding is included in height/width */
-}
+  sidebar.addEventListener('mousedown', (e) => {
+    // Prevent dragging when clicking on content, toggle, or resize handle
+    if (e.target.closest('#sidebar-content') || e.target === toggleButton || e.target === resizeHandle) {
+      return;
+    }
+    isDragging = true;
+    offsetX = e.clientX - sidebar.offsetLeft;
+    offsetY = e.clientY - sidebar.offsetTop;
+    sidebar.style.cursor = 'grabbing';
+    sidebar.style.transition = 'none';
+    document.addEventListener('mousemove', move);
+  });
 
-/* --- All other styles remain the same --- */
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      sidebar.style.cursor = 'grab';
+      sidebar.style.transition = 'all 0.3s ease';
+      document.removeEventListener('mousemove', move);
+    }
+  });
 
+  // --- Toggle expanded/collapsed state (remains the same) ---
+  toggleButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    sidebar.classList.toggle('expanded');
+    sidebar.classList.toggle('collapsed');
+    if (sidebar.classList.contains('expanded')) {
+      promptInput.focus();
+    }
+  });
 
-/* --- NEW Styles for Resize Handle --- */
-#resize-handle {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  bottom: 0;
-  right: 0;
-  cursor: se-resize; /* Southeast resize cursor */
-  opacity: 0;
-  background-image: linear-gradient(135deg, transparent 50%, #1a73e8 50%);
-  transition: opacity 0.2s;
-}
+  // --- NEW Resizing Functionality ---
+  let isResizing = false;
 
-#ai-sidebar.expanded #resize-handle {
-  opacity: 1; /* Only show when expanded */
-}
+  resizeHandle.addEventListener('mousedown', (e) => {
+    e.preventDefault(); // Prevent text selection and other default actions
+    e.stopPropagation(); // Stop the event from bubbling up to the drag listener
+    isResizing = true;
+    
+    // Remove transitions for smooth resizing
+    sidebar.style.transition = 'none';
+
+    document.addEventListener('mousemove', resizeSidebar);
+    document.addEventListener('mouseup', stopResizing);
+  });
+
+  function resizeSidebar(e) {
+    if (!isResizing) return;
+    
+    // Calculate new dimensions based on mouse position
+    const newWidth = e.clientX - sidebar.offsetLeft;
+    const newHeight = e.clientY - sidebar.offsetTop;
+    
+    sidebar.style.width = `${newWidth}px`;
+    sidebar.style.height = `${newHeight}px`;
+  }
+
+  function stopResizing() {
+    isResizing = false;
+    document.removeEventListener('mousemove', resizeSidebar);
+    document.removeEventListener('mouseup', stopResizing);
+    
+    // Restore transitions
+    sidebar.style.transition = 'all 0.3s ease';
+  }
+
+  // --- AI Response Functionality (remains the same) ---
+  async function getAiResponse() {
+    // ... same code as before ...
+  }
+  
+  // Event listeners (remains the same)
+  submitButton.addEventListener("click", getAiResponse);
+  promptInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      getAiResponse();
+    }
+  });
+
+  // Set initial position (remains the same)
+  sidebar.style.left = (window.innerWidth - 60) + 'px';
+  sidebar.style.top = (window.innerHeight / 2 - 30) + 'px';
+})();
