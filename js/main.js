@@ -4,48 +4,61 @@ import { auth } from "./amplify_config.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-// Get form elements
+// Get login form (used in index.html)
 const loginForm = document.getElementById("login-form");
+
+// Get signup form (used in signup.html, optional)
 const signupForm = document.getElementById("signup-form");
 
-// --- Login Logic ---
+// --- 🔐 Login Logic ---
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = loginForm.email.value;
-    const password = loginForm.password.value;
+    const emailOrUsername = loginForm.email.value.trim();
+    const password = loginForm.password.value.trim();
 
     try {
+      // If using username, convert to email (custom logic)
+      const email = emailOrUsername.includes("@")
+        ? emailOrUsername
+        : `${emailOrUsername}@codesync-open.firebaseapp.com`;
+
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log("Login successful:", user.email);
-      // Redirect to usernames.html after login
+      console.log("✅ Login successful:", user.email);
+
+      // Redirect after successful login
       window.location.href = "usernames.html";
     } catch (error) {
+      console.error("❌ Login failed:", error.message);
       alert("Login failed: " + error.message);
-      console.error("Login error:", error);
     }
   });
 }
 
-// --- Signup Logic ---
+// --- 📝 Signup Logic (optional) ---
 if (signupForm) {
   signupForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = signupForm.email.value;
-    const password = signupForm.password.value;
+    const emailOrUsername = signupForm.email.value.trim();
+    const password = signupForm.password.value.trim();
 
     try {
+      const email = emailOrUsername.includes("@")
+        ? emailOrUsername
+        : `${emailOrUsername}@codesync-open.firebaseapp.com`;
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log("Signup successful:", user.email);
-      // Redirect to usernames.html after signup
+      console.log("✅ Signup successful:", user.email);
+
+      // Redirect after signup
       window.location.href = "usernames.html";
     } catch (error) {
+      console.error("❌ Signup failed:", error.message);
       alert("Signup failed: " + error.message);
-      console.error("Signup error:", error);
     }
   });
 }
