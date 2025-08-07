@@ -1,6 +1,6 @@
 // Firebase v9 Modular SDK
 
-// Import Firebase modules
+// Import Firebase modules from CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
   getAuth,
@@ -9,21 +9,22 @@ import {
   signOut
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-// ✅ Your Firebase project config (DO NOT expose in production)
+// ✅ Your Firebase project config
 const firebaseConfig = {
   apiKey: "AIzaSyCDGxsS1CNVRF3wpg1eqkHfb6YVMibXOzk",
   authDomain: "codesync-open.firebaseapp.com",
   projectId: "codesync-open",
-  storageBucket: "codesync-open.appspot.com",
+  storageBucket: "codesync-open.firebasestorage.app",
   messagingSenderId: "664480055141",
-  appId: "1:664480055141:web:xxxxxxxxxxxxxxxx"
+  appId: "1:664480055141:web:383015f7bf31a43e2d2b8c",
+  measurementId: "G-H7DD5ZK91D"
 };
 
 // ✅ Initialize Firebase App
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+export const auth = getAuth(app);
 
-// ✅ Login handler (call from button click)
+// ✅ Login handler function (optional export)
 export async function loginUser(email, password) {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -39,7 +40,7 @@ export async function loginUser(email, password) {
   }
 }
 
-// ✅ Observe user state
+// ✅ Observe login/logout state
 export function onAuth(callback) {
   onAuthStateChanged(auth, callback);
 }
