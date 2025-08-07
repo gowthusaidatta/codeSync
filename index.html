@@ -1,338 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>CodeSync</title>
-   <link rel="icon" type="image/png" href="favicon_codesync.png">
-    
-    <meta name="description" content="A powerful platform for students and college management to synchronize and manage student coding profiles across competitive programming and GitHub platforms.">
-    <meta name="keywords" content="Student Coding Sync, College Dashboard, Competitive Programming Sync, GitHub Profiles, LeetCode, Codeforces, Coding Platform Integration, Student Progress Synchronization">
-    <meta name="author" content="Your Company or Team Name">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="CodeSync - Synchronize Your Coding Journey">
-    <meta property="og:description" content="Track and manage student coding activity for colleges and institutions.">
-    <meta property="og:image" content="/images/preview.jpg">
-    <meta property="og:url" content="https://yourdomain.com">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="CodeSync - Synchronize Your Coding Journey">
-    <meta name="twitter:description" content="A smart tool for institutions to synchronize student coding progress and analytics.">
-    <meta name="twitter:image" content="/images/preview.jpg">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://yourdomain.com/">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <style>
-        @keyframes fadeInSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in-slide-up { animation: fadeInSlideUp 1s ease-out forwards; }
-        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-        .password-requirement { transition: color 0.3s; }
-        .password-requirement.met { color: #10B981; }
-        .password-requirement.unmet { color: #6B7280; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSync | Login or Signup</title>
+  <script type="module" src="./js/main.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50 font-sans leading-normal tracking-normal text-gray-800">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-    <div id="home" class="relative min-h-screen flex flex-col">
-        <header class="bg-gray-900 text-white py-4 px-6 shadow-lg sticky top-0 z-50">
-            <div class="container mx-auto flex justify-between items-center max-w-7xl">
-                <div class="text-2xl font-bold">
-                    <a href="/" class="flex items-center space-x-3">
-                        <img src="favicon_codesync.png" alt="CodeSync Logo" class="h-10 w-auto filter brightness-150">
-                        <h1 class="md:text-2xl text-xl font-extrabold text-white">CodeSync</h1>
-                    </a>
-                </div>
-                <nav class="hidden md:flex space-x-6 text-lg">
-                    <a href="#home" class="hover:text-blue-400 transition duration-300 font-medium">Home</a>
-                    <a href="https://gowthusaidatta.github.io/CodeSync_test/Features.html" class="hover:text-blue-400 transition duration-300 font-medium">Features</a>
-                    <a href="leaderboard.html" class="hover:text-blue-400 transition duration-300 font-medium">Leaderboard</a>
-                    <a href="https://gowthusaidatta.github.io/CodeSync_test/contact.html" class="hover:text-blue-400 transition duration-300 font-medium">Contact</a>
-                </nav>
-                <div class="md:hidden"><button id="mobile-menu-button" class="text-white focus:outline-none p-2 rounded-md hover:bg-gray-700"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg></button></div>
-            </div>
-            <div id="mobile-menu" class="hidden md:hidden bg-gray-800 py-3 mt-2 rounded-b-lg shadow-inner">
-                <a href="#home" class="block px-6 py-3 text-white hover:bg-gray-700 transition duration-200 text-lg">Home</a>
-                <a href="https://gowthusaidatta.github.io/CodeSync_test/Features.html" class="block px-6 py-3 text-white hover:bg-gray-700 transition duration-200 text-lg">Features</a>
-                <a href="leaderboard.html" class="block px-6 py-3 text-white hover:bg-gray-700 transition duration-200 text-lg">Leaderboard</a>
-                <a href="https://gowthusaidatta.github.io/CodeSync_test/contact.html" class="block px-6 py-3 text-white hover:bg-gray-700 transition duration-200 text-lg">Contact</a>
-            </div>
-        </header>
+  <div class="w-full max-w-md bg-white shadow-lg rounded-xl p-8">
+    <h1 class="text-2xl font-bold text-center mb-6">Welcome to CodeSync</h1>
 
-        <main class="flex-grow">
-            <section class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-800 overflow-hidden py-16">
-                <div class="relative z-10 container mx-auto px-6 max-w-7xl flex flex-col lg:flex-row items-center justify-between gap-12">
-                    <div id="auth-card" class="w-full lg:w-1/2 bg-white p-8 rounded-xl shadow-2xl border border-gray-100 animate-fade-in-slide-up">
-                        <h2 id="auth-title" class="text-3xl font-bold text-gray-900 mb-6 text-center">Get Started with CodeSync</h2>
-                        <div id="auth-tabs" class="flex justify-center mb-6">
-                            <button id="login-tab" class="px-6 py-2 text-lg font-semibold">Login</button>
-                            <button id="signup-tab" class="px-6 py-2 text-lg font-semibold">Sign Up</button>
-                        </div>
-
-                        <!-- Login Form -->
-                        <form id="login-form" class="space-y-6">
-                            <div>
-                                <label for="login-identity" class="sr-only">Email or Username</label>
-                                <input id="login-identity" name="identity" type="text" autocomplete="username" required class="block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Email or Username">
-                            </div>
-                            <div class="relative">
-                                <label for="login-password" class="sr-only">Password</label>
-                                <input id="login-password" name="password" type="password" autocomplete="current-password" required class="block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Password">
-                                <button type="button" onclick="togglePassword('login-password', 'toggleLoginPasswordButton')" class="absolute right-3 top-3 text-gray-600 hover:text-blue-500" id="toggleLoginPasswordButton"><i class="bi bi-eye"></i></button>
-                            </div>
-                            <div id="login-error-message" class="hidden text-red-600 text-sm text-center -mt-2"></div>
-                            <div class="flex items-center justify-between"><div class="text-md"><button type="button" id="forgot-password-link" class="font-medium text-blue-600 hover:text-blue-500">Forgot your password?</button></div></div>
-                            <div><button type="submit" id="login-btn" class="w-full flex justify-center py-3 px-4 border border-transparent text-lg font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700">Sign in</button></div>
-                        </form>
-                        
-                        <!-- Signup Form Step 1 -->
-                        <form id="signup-form" class="space-y-6 hidden">
-                            <div><input id="signup-username" name="username" type="text" required class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-lg" placeholder="Username"></div>
-                            <div><input id="signup-full-name" name="name" type="text" required class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-lg" placeholder="Your Full Name"></div>
-                            <div><input id="signup-email" name="email" type="email" autocomplete="email" required class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-lg" placeholder="Email address"></div>
-                            <div class="relative">
-                                <input id="signup-password" name="password" type="password" autocomplete="new-password" required class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-lg" placeholder="Password" />
-                                <button type="button" onclick="togglePassword('signup-password', 'toggleSignupPasswordButton')" class="absolute right-3 top-3 text-gray-600 hover:text-blue-500" id="toggleSignupPasswordButton"><i class="bi bi-eye"></i></button>
-                            </div>
-                            <div id="password-requirements" class="text-sm space-y-1">
-                                <p id="req-length" class="password-requirement unmet">✓ At least 8 characters</p>
-                                <p id="req-case" class="password-requirement unmet">✓ Both uppercase & lowercase letters</p>
-                                <p id="req-number" class="password-requirement unmet">✓ At least one number (0-9)</p>
-                                <p id="req-special" class="password-requirement unmet">✓ At least one special character (!, @, #, ...)</p>
-                            </div>
-                            <div id="signup-error-message" class="hidden text-red-600 text-sm text-center -mt-2"></div>
-                            <div><button type="button" id="signup-next-btn" class="w-full flex justify-center py-3 px-4 text-lg font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Next</button></div>
-                        </form>
-
-                        <!-- Signup Form Step 2 -->
-                        <form id="platform-form" class="space-y-6 hidden">
-                            <h3 class="text-center text-gray-800 font-semibold text-xl">Link Your Coding Profiles</h3>
-                            <div><input id="signup-leetcode" name="leetcode_username" type="text" class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-lg" placeholder="LeetCode Username"></div>
-                            <div><input id="signup-codechef" name="codechef_username" type="text" class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-lg" placeholder="CodeChef Username"></div>
-                            <div><input id="signup-hackerrank" name="hackerrank_username" type="text" class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-lg" placeholder="HackerRank Username"></div>
-                            <div><input id="signup-gfg" name="gfg_username" type="text" class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-lg" placeholder="GFG Username"></div>
-                            <div id="platform-error-message" class="hidden text-red-600 text-sm text-center -mt-2"></div>
-                            <div><button type="submit" id="signup-btn-submit" class="w-full flex justify-center py-3 px-4 text-lg font-semibold rounded-lg text-white bg-green-600 hover:bg-green-700">Create Account</button></div>
-                            <div class="text-center text-sm"><button type="button" id="back-to-signup-btn" class="text-blue-600 hover:text-blue-500 hover:underline">Back</button></div>
-                        </form>
-                        
-                        <!-- Forgot Password Form -->
-                        <form id="forgot-password-form" class="space-y-6 hidden">
-                            <p class="text-center text-gray-600">Enter your email and we'll send you a reset link.</p>
-                            <div><input id="forgot-email" name="email" type="email" required class="block w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="Enter your Email"></div>
-                            <div id="forgot-password-message" class="text-sm text-center -mt-2"></div>
-                            <div><button type="submit" id="send-code-btn" class="w-full flex justify-center py-3 px-4 text-lg font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700">Send Reset Link</button></div>
-                            <div class="text-center text-sm"><button type="button" id="back-to-login-btn" class="text-blue-600 hover:text-blue-500 hover:underline">← Back to Login</button></div>
-                        </form>
-                    </div>
-
-                    <div class="w-full lg:w-1/2 text-center lg:text-left text-white p-8 lg:p-0">
-                        <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight">Sync Your Coding <br class="hidden sm:inline"> Journey with Precision</h1>
-                        <p class="text-lg md:text-xl text-blue-100 max-w-2xl lg:max-w-none mx-auto my-8 font-light">CodeSync helps you synchronize your progress, set goals, and collaborate with peers to become a better programmer every day.</p>
-                        <a href="https://gowthusaidatta.github.io/CodeSync_test/Features.html" class="inline-block bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-full text-lg">Explore Features</a>
-                    </div>
-                </div>
-            </section>
-        </main>
+    <!-- Toggle Tabs -->
+    <div class="flex justify-center mb-4">
+      <button id="loginTab" class="px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600">Login</button>
+      <button id="signupTab" class="px-4 py-2 font-semibold text-gray-600 border-b-2 border-transparent ml-4">Signup</button>
     </div>
 
-    <script type="module">
-        import { auth, db } from "./js/amplify_config.js";
-        import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { collection, query, where, getDocs, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    <!-- Login Form -->
+    <form id="login-form" class="space-y-4">
+      <input type="text" name="email" placeholder="Username or Email" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <input type="password" name="password" placeholder="Password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Login</button>
+    </form>
 
-        // --- DOM Elements ---
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const platformForm = document.getElementById('platform-form');
-        const forgotPasswordForm = document.getElementById('forgot-password-form');
-        const allForms = [loginForm, signupForm, platformForm, forgotPasswordForm];
-        
-        const authCard = document.getElementById('auth-card');
-        const authTitle = document.getElementById('auth-title');
-        const authTabs = document.getElementById('auth-tabs');
-        
-        const loginErrorMsg = document.getElementById('login-error-message');
-        const signupErrorMsg = document.getElementById('signup-error-message');
-        const platformErrorMsg = document.getElementById('platform-error-message');
-        const forgotPasswordMsg = document.getElementById('forgot-password-message');
-        const allMessages = [loginErrorMsg, signupErrorMsg, platformErrorMsg, forgotPasswordMsg];
+    <!-- Signup Form (hidden by default) -->
+    <form id="signup-form" class="space-y-4 hidden">
+      <input type="text" name="email" placeholder="Username or Email" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+      <input type="password" name="password" placeholder="Password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">Signup</button>
+    </form>
+  </div>
 
-        // --- UI Control Functions ---
-        const showMessage = (el, msg) => { el.textContent = msg; el.classList.remove('hidden'); };
-        const hideMessages = () => allMessages.forEach(el => { el.textContent = ''; el.classList.add('hidden'); });
+  <script>
+    // Tab switch logic
+    const loginTab = document.getElementById("loginTab");
+    const signupTab = document.getElementById("signupTab");
+    const loginForm = document.getElementById("login-form");
+    const signupForm = document.getElementById("signup-form");
 
-        const showForm = (formToShow) => {
-            hideMessages();
-            allForms.forEach(form => form.classList.add('hidden'));
-            formToShow.classList.remove('hidden');
+    loginTab.addEventListener("click", () => {
+      loginForm.classList.remove("hidden");
+      signupForm.classList.add("hidden");
+      loginTab.classList.add("text-blue-600", "border-blue-600");
+      signupTab.classList.remove("text-blue-600", "border-blue-600");
+      signupTab.classList.add("text-gray-600");
+    });
 
-            const isAuthForm = [loginForm, signupForm, platformForm].includes(formToShow);
-            authTabs.style.display = isAuthForm ? 'flex' : 'none';
+    signupTab.addEventListener("click", () => {
+      signupForm.classList.remove("hidden");
+      loginForm.classList.add("hidden");
+      signupTab.classList.remove("text-gray-600");
+      signupTab.classList.add("text-blue-600", "border-blue-600");
+      loginTab.classList.remove("text-blue-600", "border-blue-600");
+      loginTab.classList.add("text-gray-600");
+    });
+  </script>
 
-            if (formToShow === forgotPasswordForm) authTitle.textContent = 'Reset Your Password';
-            else if (formToShow === platformForm) authTitle.textContent = 'Link Coding Profiles';
-            else authTitle.textContent = 'Get Started with CodeSync';
-        };
-
-        const updateTabStyles = (activeTabId) => {
-            const tabs = [document.getElementById('login-tab'), document.getElementById('signup-tab')];
-            tabs.forEach(tab => {
-                tab.className = 'px-6 py-2 text-lg font-semibold rounded-t-lg border-b-2 transition-colors duration-300 border-transparent text-gray-500 hover:text-blue-600';
-            });
-            document.getElementById(activeTabId).className = 'px-6 py-2 text-lg font-semibold rounded-t-lg border-b-2 transition-colors duration-300 border-blue-600 text-blue-600';
-        };
-
-        // --- Password Validation ---
-        const validatePassword = () => {
-            const pw = document.getElementById('signup-password').value;
-            const checks = {
-                length: pw.length >= 8,
-                case: /[a-z]/.test(pw) && /[A-Z]/.test(pw),
-                number: /[0-9]/.test(pw),
-                special: /[!@#$%^&*()]/.test(pw),
-            };
-            document.getElementById('req-length').classList.toggle('met', checks.length);
-            document.getElementById('req-case').classList.toggle('met', checks.case);
-            document.getElementById('req-number').classList.toggle('met', checks.number);
-            document.getElementById('req-special').classList.toggle('met', checks.special);
-            document.getElementById('signup-next-btn').disabled = !Object.values(checks).every(Boolean);
-        };
-        document.getElementById('signup-password').addEventListener('input', validatePassword);
-        
-        // --- Event Listeners for UI Navigation ---
-        document.getElementById('login-tab').addEventListener('click', () => { showForm(loginForm); updateTabStyles('login-tab'); });
-        document.getElementById('signup-tab').addEventListener('click', () => { showForm(signupForm); updateTabStyles('signup-tab'); });
-        document.getElementById('forgot-password-link').addEventListener('click', (e) => { e.preventDefault(); showForm(forgotPasswordForm); });
-        document.getElementById('back-to-login-btn').addEventListener('click', () => { showForm(loginForm); updateTabStyles('login-tab'); });
-        document.getElementById('signup-next-btn').addEventListener('click', () => showForm(platformForm));
-        document.getElementById('back-to-signup-btn').addEventListener('click', () => showForm(signupForm));
-        document.getElementById('mobile-menu-button').addEventListener('click', () => document.getElementById('mobile-menu').classList.toggle('hidden'));
-        window.togglePassword = (inputId, buttonId) => {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(buttonId).querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('bi-eye', 'bi-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('bi-eye-slash', 'bi-eye');
-            }
-        };
-
-        // --- Authentication Logic ---
-        
-        // LOGIN Handler
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            hideMessages();
-            const identity = loginForm.identity.value.trim();
-            const password = loginForm.password.value;
-            const loginBtn = document.getElementById('login-btn');
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Signing in...';
-
-            try {
-                let email = identity;
-                // If identity is not an email, query Firestore for the username
-                if (!identity.includes('@')) {
-                    const usersRef = collection(db, "users");
-                    const q = query(usersRef, where("username", "==", identity));
-                    const querySnapshot = await getDocs(q);
-
-                    if (querySnapshot.empty) {
-                        throw new Error("Invalid username or password.");
-                    }
-                    // Get the email from the found user document
-                    email = querySnapshot.docs[0].data().email;
-                }
-                
-                // Sign in with the resolved email
-                await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = "./results.html"; // Redirect on success
-            } catch (error) {
-                console.error("Login Error:", error);
-                showMessage(loginErrorMsg, "Login failed: " + error.message);
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Sign in';
-            }
-        });
-
-        // SIGNUP Handler (on the final step)
-        platformForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            hideMessages();
-            const signupBtn = document.getElementById('signup-btn-submit');
-            signupBtn.disabled = true;
-            signupBtn.textContent = 'Creating Account...';
-            
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            const username = document.getElementById('signup-username').value.trim();
-            const fullName = document.getElementById('signup-full-name').value.trim();
-            
-            try {
-                // 1. Check if username is already taken
-                const usersRef = collection(db, "users");
-                const q = query(usersRef, where("username", "==", username));
-                const querySnapshot = await getDocs(q);
-                if (!querySnapshot.empty) {
-                    throw new Error("Username is already taken. Please choose another.");
-                }
-
-                // 2. Create user in Firebase Auth
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                // 3. Save user profile data to Firestore
-                const userProfile = {
-                    username,
-                    fullName,
-                    email,
-                    leetcode: document.getElementById('signup-leetcode').value.trim(),
-                    codechef: document.getElementById('signup-codechef').value.trim(),
-                    hackerrank: document.getElementById('signup-hackerrank').value.trim(),
-                    gfg: document.getElementById('signup-gfg').value.trim(),
-                };
-                await setDoc(doc(db, "users", user.uid), userProfile);
-                
-                window.location.href = "./results.html"; // Redirect on success
-
-            } catch (error) {
-                console.error("Signup Error:", error);
-                showMessage(platformErrorMsg, "Signup failed: " + error.message);
-            } finally {
-                signupBtn.disabled = false;
-                signupBtn.textContent = 'Create Account';
-            }
-        });
-
-        // FORGOT PASSWORD Handler
-        forgotPasswordForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideMessages();
-            const email = document.getElementById('forgot-email').value;
-            const sendBtn = document.getElementById('send-code-btn');
-            sendBtn.disabled = true;
-            sendBtn.textContent = 'Sending...';
-
-            try {
-                await sendPasswordResetEmail(auth, email);
-                showMessage(forgotPasswordMsg, "Password reset link sent! Check your inbox.");
-                forgotPasswordMsg.classList.replace('text-red-600', 'text-green-600');
-            } catch(error) {
-                showMessage(forgotPasswordMsg, error.message);
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.textContent = 'Send Reset Link';
-            }
-        });
-
-        // --- Initial State Setup ---
-        showForm(loginForm);
-        updateTabStyles('login-tab');
-    </script>
 </body>
 </html>
